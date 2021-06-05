@@ -808,7 +808,7 @@ namespace cm {
         *(ctx_ptr++) = HashLookup(IntervalHash(hash) + interval_add, true);
       }
       if (cur.ModelEnabled(kModelInterval2, enabled)) {
-        *(ctx_ptr++) = HashLookup(hashify(interval_model2_ & interval2_mask_) + (22 * 123456781 + 1), true);
+        *(ctx_ptr++) = HashLookup(hashify(interval_model2_ & interval2_mask_) + (22U * 123456781U + 1), true);
       }
       if (cur.ModelEnabled(kModelBracket, enabled)) {
         auto hash = bracket_.GetHash();
@@ -911,7 +911,7 @@ namespace cm {
         }
       }
 
-      uint32_t h = HashFunc((last_bytes_ & 0xFFFF) * 3, 0x4ec457c1 * 19);
+      uint32_t h = HashFunc((last_bytes_ & 0xFFFF) * 3, 0x4ec457c1U * 19);
       if (mm_len == 0) {
         ++miss_len_;
         if (kStatistics) {
