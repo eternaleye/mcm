@@ -24,13 +24,16 @@
 #ifndef _COMPRESS_HPP_
 #define _COMPRESS_HPP_
 
-#include <vector>      // for vector
+#include <vector>                 // for vector
 
-#include <cstddef>     // for size_t
-#include <cstdint>     // for uint8_t, uint64_t, uint32_t
+#include <cstddef>                // for size_t
+#include <cstdint>                // for uint8_t, uint64_t, uint32_t
 
-#include "Stream.hpp"  // for Stream (ptr only), WriteMemoryStream, ReadMemo...
-#include "Util.hpp"    // for MB
+#include <libmcm/Compressor.hpp>  // for Compressor
+#include <libmcm/Stream.hpp>      // for Stream (ptr only)
+
+#include "Stream.hpp"             // for WriteMemoryStream, ReadMemoryStream
+#include "Util.hpp"               // for MB
 
 class CompressionJob {
 public:
@@ -92,43 +95,6 @@ enum class CompressorType : int {
   kTypeCMMax,
   kTypeCMSimple,
   kTypeDMC,
-};
-
-// Generic compressor interface.
-class Compressor {
-public:
-  class Factory {
-  public:
-    virtual Compressor* create() = 0;
-  };
-  template <typename CompressorType>
-  class FactoryOf : public Compressor::Factory {
-    virtual Compressor* create() {
-      return new CompressorType();
-    }
-  };
-
-  // Optimization variable for brute forcing.
-  virtual bool setOpt(uint32_t opt) {
-    return true;
-  }
-  virtual bool setOpts(size_t* opts) {
-    return true;
-  }
-  virtual uint32_t getOpt() const {
-    return 0;
-  }
-  virtual void setMemUsage(uint32_t level) {
-  }
-  virtual bool failed() {
-    return false;
-  }
-  // Compress n bytes.
-  virtual void compress(Stream* in, Stream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF) = 0;
-  // Decompress n bytes, the calls must line up. You can't do C(20)C(30)D(50)
-  virtual void decompress(Stream* in, Stream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF) = 0;
-  virtual ~Compressor() {
-  }
 };
 
 // In memory compressor.
