@@ -1,23 +1,21 @@
 #ifndef _LIBMCM_COMPRESSOR_HPP_
 #define _LIBMCM_COMPRESSOR_HPP_
 
+#include <memory>             // for unique_ptr
+
 #include <libmcm/Stream.hpp>  // for Stream
 
 class Compressor {
     public:
         class Factory {
             public:
-                // TODO: Use std::unique_ptr
-                //virtual std::unique_ptr<Compressor> create() = 0;
-                virtual Compressor* create() = 0;
+                virtual std::unique_ptr<Compressor> create() = 0;
         };
 
         template <typename CompressorType>
         class FactoryOf : public Compressor::Factory {
-            // TODO: Use std::unique_ptr
-            //virtual std::unique_ptr<Compressor> create() {
-            virtual Compressor* create() {
-                // TODO: In C++17, use std::make_unique
+            virtual std::unique_ptr<Compressor> create() {
+                // TODO<C++17>: Use std::make_unique
                 return new CompressorType();
             }
         };
