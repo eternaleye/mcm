@@ -56,7 +56,7 @@ public:
     return error;
   }
 
-  ALWAYS_INLINE void clear_err() const {
+  ALWAYS_INLINE void clear_err() {
     error = false;
   }
 
