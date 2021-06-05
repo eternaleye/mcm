@@ -23,11 +23,10 @@
 
 #include "Util.hpp"
 
-#include <algorithm>  // for max, copy
-#include <fstream>    // for ifstream, ostringstream, basic_ostream, ios_base
-#include <iomanip>    // for operator<<, setfill, setw
-
-#include <cstring>    // for strerror
+#include <algorithm>     // for max, copy
+#include <fstream>       // for ifstream, ostringstream, basic_ostream, ios_base
+#include <iomanip>       // for operator<<, setfill, setw
+#include <system_error>  // for system_error, system_category
 
 bool fileExists(const char* name) {
   std::ifstream fin(name, std::ios_base::in);
@@ -60,9 +59,7 @@ double clockToSeconds(clock_t c) {
 }
 
 std::string errstr(int err) {
-  // char buffer[1024];
-  // strerror_s(buffer, sizeof(buffer), err);
-  return strerror(err);
+  return std::system_error(err, std::system_category()).what();
 }
 
 uint64_t computeRate(uint64_t size, uint64_t delta_time) {
