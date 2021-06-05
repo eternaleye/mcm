@@ -1,0 +1,13 @@
+##
+## Common
+##
+
+# cc/c++
+*.o
+*.a
+
+##
+## Custom
+##
+bin/mcm
+lib/libmcm.a
