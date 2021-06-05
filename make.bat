@@ -1,2 +1,2 @@
-g++ -static -DNDEBUG -O3 -fomit-frame-pointer -DWIN32 -msse2 -std=c++11 -D_FILE_OFFSET_BITS=64 -o mcm Archive.cpp Huffman.cpp MCM.cpp Memory.cpp Util.cpp Compressor.cpp File.cpp LZ.cpp Tests.cpp
+g++ -std=c++11 -iquote lib -DNDEBUG -DWIN32 -D_FILE_OFFSET_BITS=64 -O3 -fomit-frame-pointer -msse2 -static -o bin\mcm bin\mcm.cpp lib\Archive.cpp lib\Huffman.cpp lib\Memory.cpp lib\Util.cpp lib\Compressor.cpp lib\File.cpp lib\LZ.cpp lib\Tests.cpp -pthread
 PAUSE
