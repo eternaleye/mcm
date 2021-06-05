@@ -76,21 +76,21 @@ bool Archive::Header::isSameVersion() const {
 
 Archive::Algorithm::Algorithm(const CompressionOptions& options, Detector::Profile profile) : profile_(profile) {
   mem_usage_ = options.mem_usage_;
-  algorithm_ = Compressor::kTypeStore;
+  algorithm_ = CompressorType::kTypeStore;
   filter_ = FilterType::kFilterTypeNone;
 
   if (profile == Detector::kProfileWave16) {
-    algorithm_ = Compressor::kTypeWav16;
-    // algorithm_ = Compressor::kTypeStore;
+    algorithm_ = CompressorType::kTypeWav16;
+    // algorithm_ = CompressorType::kTypeStore;
   } else {
     switch (options.comp_level_) {
-    case kCompLevelStore: algorithm_ = Compressor::kTypeStore; break;
-    case kCompLevelTurbo: algorithm_ = Compressor::kTypeCMTurbo; break;
-    case kCompLevelFast: algorithm_ = Compressor::kTypeCMFast; break;
-    case kCompLevelMid: algorithm_ = Compressor::kTypeCMMid; break;
-    case kCompLevelHigh: algorithm_ = Compressor::kTypeCMHigh; break;
-    case kCompLevelMax: algorithm_ = Compressor::kTypeCMMax; break;
-    case kCompLevelSimple: algorithm_ = Compressor::kTypeCMSimple; break;
+    case kCompLevelStore: algorithm_ = CompressorType::kTypeStore; break;
+    case kCompLevelTurbo: algorithm_ = CompressorType::kTypeCMTurbo; break;
+    case kCompLevelFast: algorithm_ = CompressorType::kTypeCMFast; break;
+    case kCompLevelMid: algorithm_ = CompressorType::kTypeCMMid; break;
+    case kCompLevelHigh: algorithm_ = CompressorType::kTypeCMHigh; break;
+    case kCompLevelMax: algorithm_ = CompressorType::kTypeCMMax; break;
+    case kCompLevelSimple: algorithm_ = CompressorType::kTypeCMSimple; break;
     }
   }
   switch (profile) {
@@ -132,21 +132,21 @@ Archive::Archive(Stream* stream) : stream_(stream) {
 
 Compressor* Archive::Algorithm::CreateCompressor(const FrequencyCounter<256>& freq) {
   switch (algorithm_) {
-  case Compressor::kTypeStore: return new Store;
-  case Compressor::kTypeWav16: return new Wav16;
-  case Compressor::kTypeCMTurbo: return new cm::CM<3, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
-  case Compressor::kTypeCMFast: return new cm::CM<4, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
-  case Compressor::kTypeCMMid: return new cm::CM<6, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
-  case Compressor::kTypeCMHigh: return new cm::CM<10, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
-  case Compressor::kTypeCMMax: return new cm::CM<13, /*sse*/true>(freq, mem_usage_, lzp_enabled_, profile_);
-  case Compressor::kTypeCMSimple: return new cm::CM<6, false>(freq, mem_usage_, lzp_enabled_, Detector::kProfileSimple);
+  case CompressorType::kTypeStore: return new Store;
+  case CompressorType::kTypeWav16: return new Wav16;
+  case CompressorType::kTypeCMTurbo: return new cm::CM<3, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
+  case CompressorType::kTypeCMFast: return new cm::CM<4, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
+  case CompressorType::kTypeCMMid: return new cm::CM<6, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
+  case CompressorType::kTypeCMHigh: return new cm::CM<10, /*sse*/false>(freq, mem_usage_, lzp_enabled_, profile_);
+  case CompressorType::kTypeCMMax: return new cm::CM<13, /*sse*/true>(freq, mem_usage_, lzp_enabled_, profile_);
+  case CompressorType::kTypeCMSimple: return new cm::CM<6, false>(freq, mem_usage_, lzp_enabled_, Detector::kProfileSimple);
   }
   return nullptr;
 }
 
 void Archive::Algorithm::read(Stream* stream) {
   mem_usage_ = static_cast<uint8_t>(stream->get());
-  algorithm_ = static_cast<Compressor::Type>(stream->get());
+  algorithm_ = static_cast<CompressorType>(stream->get());
   lzp_enabled_ = stream->get() != 0;
   filter_ = static_cast<FilterType>(stream->get());
   profile_ = static_cast<Detector::Profile>(stream->get());
@@ -154,7 +154,7 @@ void Archive::Algorithm::read(Stream* stream) {
 
 void Archive::Algorithm::write(Stream* stream) {
   stream->put(mem_usage_);
-  stream->put(algorithm_);
+  stream->put(static_cast<typename std::underlying_type<CompressorType>::type>(algorithm_));
   stream->put(lzp_enabled_);
   stream->put(filter_);
   stream->put(profile_);

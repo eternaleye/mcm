@@ -32,7 +32,7 @@
 #include <vector>          // for vector
 
 #include "CM.hpp"
-#include "Compressor.hpp"  // for Compressor, Compressor::Type
+#include "Compressor.hpp"  // for Compressor, CompressorType
 #include "Detector.hpp"    // for Detector, Detector::Profile, Analyzer, Ana...
 #include "File.hpp"        // for FileSegmentStream::FileSegments, FileInfo ...
 #include "Util.hpp"        // for FrequencyCounter
@@ -128,7 +128,7 @@ public:
 
   private:
     uint8_t mem_usage_;
-    Compressor::Type algorithm_;
+    CompressorType algorithm_;
     bool lzp_enabled_;
     FilterType filter_;
     Detector::Profile profile_;

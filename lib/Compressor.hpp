@@ -82,21 +82,21 @@ private:
   std::vector<CompressionJob*> jobs_;
 };
 
+enum class CompressorType : int {
+  kTypeStore,
+  kTypeWav16,
+  kTypeCMTurbo,
+  kTypeCMFast,
+  kTypeCMMid,
+  kTypeCMHigh,
+  kTypeCMMax,
+  kTypeCMSimple,
+  kTypeDMC,
+};
+
 // Generic compressor interface.
 class Compressor {
 public:
-  enum Type {
-    kTypeStore,
-    kTypeWav16,
-    kTypeCMTurbo,
-    kTypeCMFast,
-    kTypeCMMid,
-    kTypeCMHigh,
-    kTypeCMMax,
-    kTypeCMSimple,
-    kTypeDMC,
-  };
-
   class Factory {
   public:
     virtual Compressor* create() = 0;
