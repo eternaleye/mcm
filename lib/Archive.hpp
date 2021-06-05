@@ -31,7 +31,6 @@
 #include <string>          // for string
 #include <vector>          // for vector
 
-#include "CM.hpp"
 #include "Compressor.hpp"  // for Compressor, CompressorType
 #include "Detector.hpp"    // for Detector, Detector::Profile, Analyzer, Ana...
 #include "File.hpp"        // for FileSegmentStream::FileSegments, FileInfo ...

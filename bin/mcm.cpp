@@ -21,28 +21,29 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>        // for copy_n, max, min, copy
-#include <chrono>           // for steady_clock, seconds, duration_cast, dur...
-#include <iomanip>          // for operator<<, setprecision
-#include <iostream>         // for operator<<, basic_ostream, endl, basic_os...
-#include <limits>           // for numeric_limits
-#include <numeric>          // for accumulate
-#include <random>           // for random_device, uniform_int_distribution
-#include <string>           // for operator==, operator<<, string, char_traits
-#include <vector>           // for vector
+#include <algorithm>               // for copy_n, max, min, copy
+#include <chrono>                  // for steady_clock, seconds, duration_cast, dur...
+#include <iomanip>                 // for operator<<, setprecision
+#include <iostream>                // for operator<<, basic_ostream, endl, basic_os...
+#include <limits>                  // for numeric_limits
+#include <numeric>                 // for accumulate
+#include <random>                  // for random_device, uniform_int_distribution
+#include <string>                  // for operator==, operator<<, string, char_traits
+#include <vector>                  // for vector
 
-#include <cassert>          // for assert
-#include <cstddef>          // for size_t
-#include <cstdint>          // for uint64_t, uint32_t, uint8_t
+#include <cassert>                 // for assert
+#include <cstddef>                 // for size_t
+#include <cstdint>                 // for uint64_t, uint32_t, uint8_t
 
-#include "Archive.hpp"      // for CompressionOptions, Archive, Archive::Header
-#include "File.hpp"         // for FileInfo, File
-#include "LZ.hpp"           // for LZ16, SimpleEncoder
-#include "LZ-inl.hpp"       // for LZ16::compress, LZ16::decompress
-#include "MatchFinder.hpp"  // for FastMatchFinder, MemoryMatchFinder
-#include "Stream.hpp"       // for VoidWriteStream
-#include "Tests.hpp"        // for RunAllTests
-#include "Util.hpp"         // for trimDir, formatNumber
+#include "compressors/LZ.hpp"      // for LZ16, SimpleEncoder
+#include "compressors/LZ-inl.hpp"  // for LZ16::compress, LZ16::decompress
+
+#include "Archive.hpp"             // for CompressionOptions, Archive, Archive::Header
+#include "File.hpp"                // for FileInfo, File
+#include "MatchFinder.hpp"         // for FastMatchFinder, MemoryMatchFinder
+#include "Stream.hpp"              // for VoidWriteStream
+#include "Tests.hpp"               // for RunAllTests
+#include "Util.hpp"                // for trimDir, formatNumber
 
 class Compressor;
 

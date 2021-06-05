@@ -62,19 +62,19 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     text_profile_ = CMProfile();
 
     if (false) {
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder1);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelSpecialChar);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder1);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelSpecialChar);
     } else {
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder3);
-    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder5);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder3);
+      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder5);
     }
     if (kInputs > idx++) text_profile_.EnableModel(kModelWord1);
     if (kInputs > idx++) text_profile_.EnableModel(kModelInterval2);
@@ -94,19 +94,19 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     text_match_profile_ = CMProfile();
 
     if (false) {
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder1);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder1);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
     } else {
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder7);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
-    if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder7);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
+      if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
     }
     if (kInputs > idx++) text_match_profile_.EnableModel(kModelWord1);
     if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder5);

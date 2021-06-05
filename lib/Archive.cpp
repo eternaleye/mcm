@@ -23,29 +23,30 @@
 
 #include "Archive.hpp"
 
-#include <algorithm>           // for max, copy, sort, min, remove_if, equal
-#include <chrono>              // for high_resolution_clock, duration, durat...
-#include <iostream>            // for operator<<, basic_ostream, endl, basic...
-#include <limits>              // for numeric_limits
-#include <list>                // for list
-#include <mutex>               // for mutex, unique_lock
-#include <set>                 // for multiset
-#include <utility>             // for pair, move
+#include <algorithm>               // for max, copy, sort, min, remove_if, equal
+#include <chrono>                  // for high_resolution_clock, duration, durat...
+#include <iostream>                // for operator<<, basic_ostream, endl, basic...
+#include <limits>                  // for numeric_limits
+#include <list>                    // for list
+#include <mutex>                   // for mutex, unique_lock
+#include <set>                     // for multiset
+#include <utility>                 // for pair, move
 
-#include <cctype>              // for isdigit
-#include <cstddef>             // for size_t
-#include <cstdint>             // for uint64_t, uint32_t, uint8_t
+#include <cctype>                  // for isdigit
+#include <cstddef>                 // for size_t
+#include <cstdint>                 // for uint64_t, uint32_t, uint8_t
 
-#include "CM.hpp"              // for CM
-#include "CM-inl.hpp"          // for CM::CM<kInputs, kUseSSE, HistoryType>
-#include "Dict.hpp"            // for Dict::CodeWordSet, Dict::Filter, Dict
-#include "Filter.hpp"          // for Filter
-#include "Huffman.hpp"         // for Huffman::Code, Huffman, Huffman::Tree
-#include "ProgressMeter.hpp"   // for ProgressThread, AutoUpdater
-#include "Stream.hpp"          // for Stream, ReadMemoryStream, VerifyStream
-#include "Wav16.hpp"           // for Wav16
-#include "WordCounter.hpp"     // for WordCount
-#include "X86Binary.hpp"       // for X86AdvancedFilter
+#include "compressors/CM.hpp"      // for CM
+#include "compressors/CM-inl.hpp"  // for CM::CM<kInputs, kUseSSE, HistoryType>
+#include "compressors/Wav16.hpp"   // for Wav16
+
+#include "Dict.hpp"                // for Dict::CodeWordSet, Dict::Filter, Dict
+#include "Filter.hpp"              // for Filter
+#include "Huffman.hpp"             // for Huffman::Code, Huffman, Huffman::Tree
+#include "ProgressMeter.hpp"       // for ProgressThread, AutoUpdater
+#include "Stream.hpp"              // for Stream, ReadMemoryStream, VerifyStream
+#include "WordCounter.hpp"         // for WordCount
+#include "X86Binary.hpp"           // for X86AdvancedFilter
 
 static const bool kTestFilter = false;
 static const size_t kSizePad = 10;
