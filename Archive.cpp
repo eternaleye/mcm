@@ -226,7 +226,7 @@ Filter* Archive::Algorithm::createFilter(Stream* stream, Analyzer* analyzer, Arc
           fout << s.Word() << std::endl;
         }
       }
-      auto& freq = builder.FrequencyCounter();
+      auto& freq = builder.GetFrequencies();
       dict_filter->AddCodeWords(code_words.GetCodeWords(), code_words.num1_, code_words.num2_, code_words.num3_, &freq, dict_codes.Count());
       if (false) {
         std::cerr << std::endl << "Before " << freq.Sum() << std::endl;
