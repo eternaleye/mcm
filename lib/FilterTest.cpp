@@ -30,7 +30,6 @@
 #include <vector>              // for vector
 
 #include <cstdint>             // for uint8_t, uint32_t, uint64_t, uint16_t
-#include <cstring>             // for memcpy, memmove
 #include <ctime>               // for clock, size_t, clock_t
 
 #include "CM.hpp"              // for CM
@@ -144,7 +143,7 @@ public:
     for (uint32_t i = 0; i < count; i += 2) {
       uint8_t c = ptr[i];
       ptr[i] = c - prev_[3];
-      memmove(prev_ + 1, prev_, 3);
+      std::move(prev_, prev_ + 3, prev_ + 1);
       prev_[0] = c;
     }
   }
@@ -152,7 +151,7 @@ public:
     for (uint32_t i = 0; i + 1 < count; i += 2) {
       uint8_t c = ptr[i];
       ptr[i] = c + prev_[3];
-      memmove(prev_ + 1, prev_, 3);
+      std::move(prev_, prev_ + 3, prev_ + 1);
       prev_[0] = ptr[i];
     }
   }
@@ -211,7 +210,7 @@ public:
     for (uint32_t i = 0; i < count; ++i) {
       out[pos[i % 4]++] = ptr[i];
     }
-    memcpy(ptr, out, count);
+    std::copy(out, out + count, ptr);
   }
   virtual void reverseFilter(uint8_t* ptr, uint32_t count) {
     if (count != 0x10000) {
@@ -224,7 +223,7 @@ public:
         out[i + j * 4] = ptr[pos++];
       }
     }
-    memcpy(ptr, out, count);
+    std::copy(out, out + count, ptr);
   }
   static uint32_t getMaxExpansion() {
     return 1;

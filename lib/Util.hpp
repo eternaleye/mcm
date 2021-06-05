@@ -34,9 +34,9 @@
 #include <vector>       // for vector
 
 #include <cassert>      // for assert
+#include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t, uint8_t, uint64_t, int64_t
 #include <ctime>        // for clock_t
-#include <cstring>      // for memcpy, memmove
 
 #include <xmmintrin.h>  // for __m128, _mm_loadu_ps, _mm_storeu_ps
 
@@ -429,13 +429,13 @@ static void ReplaceSubstring(T* data, size_t old_pos, size_t len, size_t new_pos
   }
   std::vector<T> temp(len);
   // Delete cur and reinsert.
-  memcpy(&temp[0], &data[old_pos], len * sizeof(T));
+  std::copy(&data[old_pos], &data[old_pos + len], &temp[0]);
   cur_len -= len;
-  memmove(&data[old_pos], &data[old_pos + len], (cur_len - old_pos) * sizeof(T));
+  std::move(&data[old_pos + len], &data[old_pos + len + cur_len], &data[old_pos]);
   // Reinsert.
   new_pos = new_pos % (cur_len + 1);
-  memmove(&data[new_pos + len], &data[new_pos], (cur_len - new_pos) * sizeof(T));
-  memcpy(&data[new_pos], &temp[0], len * sizeof(T));
+  std::move(&data[new_pos], &data[new_pos + cur_len], &data[new_pos + len]);
+  std::copy(&temp[0], &temp[len], &data[new_pos]);
 }
 
 template <typename T>

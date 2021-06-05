@@ -33,8 +33,8 @@
 #include <vector>              // for vector, vector<>::reverse_iterator
 
 #include <cassert>             // for assert
+#include <cstddef>             // for size_t
 #include <cstdint>             // for uint8_t, uint32_t, int64_t
-#include <cstring>             // for size_t, memcpy, strcmp
 #include <ctime>               // for clock
 
 #include "Filter.hpp"          // for ByteStreamFilter
@@ -106,8 +106,7 @@ public:
       if (idx1 != idx2) {
         return idx1 < idx2;
       }
-      // return a < b;
-      return strcmp(a.c_str(), b.c_str()) < 0;
+      return a < b;
     }
 
   private:
@@ -689,7 +688,7 @@ public:
                 for (auto& c : word) c = MakeLowerCase(c);
                 *(out_ptr++) = static_cast<uint8_t>(escape_cap_word_);
                 if (kStats) ++escape_count_word_;
-                memcpy(out_ptr, &word[0], word_len);
+                std::copy(&word[0], &word[0] + word_len, out_ptr);
                 in_ptr += word_len;
                 out_ptr += word_len;
                 break;
@@ -697,7 +696,7 @@ public:
                 word[0] = MakeLowerCase(word[0]);
                 *(out_ptr++) = static_cast<uint8_t>(escape_cap_first_);
                 if (kStats) ++escape_count_first_;
-                memcpy(out_ptr, &word[0], word_len);
+                std::copy(&word[0], &word[0] + word_len, out_ptr);
                 in_ptr += word_len;
                 out_ptr += word_len;
                 break;

@@ -7,9 +7,9 @@
 #include <vector>     // for vector
 
 #include <cassert>    // for assert
+#include <cstddef>    // for size_t
 #include <cstdio>     // for EOF
 #include <cstdint>    // for uint8_t, uint64_t, uint32_t, uint16_t
-#include <cstring>    // for size_t, memcpy
 
 #include "Util.hpp"   // for unimplementedError, ALWAYS_INLINE, kBitsPerByte
 
@@ -187,7 +187,7 @@ public:
     *pos_++ = static_cast<uint8_t>(static_cast<unsigned int>(c));
   }
   virtual void write(const uint8_t* data, uint32_t count) {
-    memcpy(pos_, data, count);
+    std::copy(data, data + count, pos_);
     pos_ += count;
   }
   virtual uint64_t tell() const {

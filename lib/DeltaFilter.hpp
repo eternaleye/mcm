@@ -27,8 +27,8 @@
 #include <algorithm>   // for fill, min
 #include <memory>      // for unique_ptr
 
+#include <cstddef>     // for size_t
 #include <cstdint>     // for uint32_t, uint8_t
-#include <cstring>     // for size_t, memcpy
 
 #include "Filter.hpp"  // for ByteStreamFilter
 #include "Memory.hpp"  // for readBytes, writeBytes
@@ -66,7 +66,7 @@ private:
   void process(uint8_t* out, size_t* out_count, uint8_t* in, size_t* in_count) {
     const auto max_c = std::min(*out_count, *in_count);
     if (max_c < bytes_) {
-      memcpy(out, in, max_c);
+      std::copy(in, in + max_c, out);
       *out_count = *in_count = max_c;
     } else {
       size_t i;

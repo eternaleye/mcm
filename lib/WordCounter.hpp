@@ -24,7 +24,7 @@
 #ifndef _WORD_COUNTER_HPP_
 #define _WORD_COUNTER_HPP_
 
-#include <algorithm>   // for fill
+#include <algorithm>   // for copy, fill
 #include <iostream>    // for operator<<, endl, basic_ostream, basic_ostream...
 #include <new>         // for operator new
 #include <numeric>     // for accumulate
@@ -32,8 +32,8 @@
 #include <vector>      // for vector
 
 #include <cassert>     // for assert
+#include <cstddef>     // for size_t
 #include <cstdint>     // for uint8_t, uint32_t, int64_t
-#include <cstring>     // for size_t, memcmp, memcpy, memmove
 #include <ctime>       // for clock
 
 #include "Memory.hpp"  // for MemMap
@@ -205,7 +205,7 @@ public:
       auto* cur_entry = reinterpret_cast<Entry*>(cur);
       auto size = cur_entry->SizeOf();
       if (cur_entry->Count() >= min_count) {
-        memmove(dest, cur, size);
+        std::move(cur, cur + size, dest);
         dest += size;
       }
       cur += size;
@@ -268,7 +268,7 @@ private:
     }
 
     bool Equals(const uint8_t* word, size_t len) const {
-      return length_ == len && memcmp(word, data_, len) == 0;
+      return length_ == len && std::equal(word, word + len, data_);
     }
 
     size_t SizeOf() const {
@@ -308,11 +308,11 @@ private:
     }
 
     ALWAYS_INLINE bool Equals(const Entry* other) const {
-      return length_ == other->length_ && memcmp(data_, other->data_, length_) == 0;
+      return length_ == other->length_ && std::equal(data_, data_ + length_, other->data_);
     }
 
     Entry(const uint8_t* begin, const uint8_t* end) : length_(end - begin) {
-      memcpy(&data_[0], begin, length_);
+      std::copy(begin, begin + length_, &data_[0]);
     }
 
     void Add(WordCC type) {

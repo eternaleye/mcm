@@ -33,7 +33,6 @@
 #include <cassert>          // for assert
 #include <cstddef>          // for size_t
 #include <cstdint>          // for uint64_t, uint32_t, uint8_t
-#include <cstring>          // for size_t, memset
 #include <ctime>            // for clock, clock_t
 
 #include "Archive.hpp"      // for CompressionOptions, Archive, Archive::Header
@@ -343,7 +342,7 @@ int main(int argc, char* argv[]) {
     const uint32_t comp_end = clock();
     std::cout << "Done compressing " << length << " -> " << comp_size << " = " << float(double(length) / double(comp_size)) << " rate: "
       << prettySize(static_cast<uint64_t>(long_length * kCompIterations / clockToSeconds(comp_end - comp_start))) << "/s" << std::endl;
-    memset(in_buffer, 0, length);
+    std::fill(in_buffer, in_buffer + length, 0);
     const uint32_t decomp_start = clock();
     for (uint32_t i = 0; i < kDecompIterations; ++i) {
       compressor->decompress(out_buffer, in_buffer, length);

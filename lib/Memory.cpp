@@ -26,7 +26,6 @@
 #include <algorithm>  // for fill
 
 #include <cstdlib>    // for free, calloc, size_t
-#include <cstring>    // for memset
 
 #define USE_MALLOC 1
 
@@ -75,7 +74,7 @@ void MemMap::release() {
 
 void MemMap::zero() {
 #ifdef USE_MALLOC
-  std::memset(storage, 0, size);
+  std::fill(reinterpret_cast<uint8_t*>(storage), reinterpret_cast<uint8_t*>(storage) + size, 0);
 #elif WIN32
   storage = (void*)VirtualAlloc(storage, size, MEM_RESET, PAGE_READWRITE);
 #else

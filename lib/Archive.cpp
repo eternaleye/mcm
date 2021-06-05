@@ -23,7 +23,7 @@
 
 #include "Archive.hpp"
 
-#include <algorithm>           // for max, copy, sort, min, remove_if
+#include <algorithm>           // for max, copy, sort, min, remove_if, equal
 #include <iostream>            // for operator<<, basic_ostream, endl, basic...
 #include <limits>              // for numeric_limits
 #include <list>                // for list
@@ -32,8 +32,8 @@
 #include <utility>             // for pair, move
 
 #include <cctype>              // for isdigit
+#include <cstddef>             // for size_t
 #include <cstdint>             // for uint64_t, uint32_t, uint8_t
-#include <cstring>             // for size_t, memcmp, memcpy
 #include <ctime>               // for clock, CLOCKS_PER_SEC
 
 #include "CM.hpp"              // for CM
@@ -51,7 +51,7 @@ static const bool kTestFilter = false;
 static const size_t kSizePad = 10;
 
 Archive::Header::Header() {
-  memcpy(magic_, getMagic(), kMagicStringLength);
+  std::copy(getMagic(), getMagic() + kMagicStringLength, magic_);
 }
 
 void Archive::Header::read(Stream* stream) {
@@ -67,7 +67,7 @@ void Archive::Header::write(Stream* stream) {
 }
 
 bool Archive::Header::isArchive() const {
-  return memcmp(magic_, getMagic(), kMagicStringLength) == 0;
+  return std::equal(magic_, magic_ + kMagicStringLength, getMagic());
 }
 
 bool Archive::Header::isSameVersion() const {
