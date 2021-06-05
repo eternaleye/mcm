@@ -43,8 +43,8 @@
 #define ALWAYS_INLINE __forceinline
 #define NO_INLINE __declspec(noinline)
 #else
-#define ALWAYS_INLINE __attribute__((always_inline))
-#define NO_INLINE __declspec(noinline)
+#define ALWAYS_INLINE inline __attribute__((always_inline))
+#define NO_INLINE __attribute__((noinline))
 #endif
 
 #define no_alias __restrict
