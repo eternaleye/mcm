@@ -126,7 +126,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     if (kInputs > idx++) binary_profile_.EnableModel(kModelSparse3);
     if (kInputs > idx++) binary_profile_.EnableModel(kModelSparse4);
     if (kInputs > idx++) binary_profile_.EnableModel(kModelOrder0);
-    if (kInputs > idx++) binary_profile_.EnableModel(static_cast<ModelType>(opts_[0]));
+    //if (kInputs > idx++) binary_profile_.EnableModel(static_cast<ModelType>(opts_[0]));
     // binary_profile_ = CMProfile();
     binary_profile_.SetMatchModelOrder(binary_mm_order);
     binary_profile_.SetMinLZPLen(lzp_enabled_ ? 0 : kMaxMatch + 1);
