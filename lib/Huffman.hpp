@@ -25,8 +25,9 @@
 #define _HUFFMAN_HPP_
 
 #include <algorithm>
-#include <cassert>
 #include <set>
+
+#include <cassert>
 
 #include "Compressor.hpp"
 #include "ProgressMeter.hpp"

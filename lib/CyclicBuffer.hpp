@@ -26,8 +26,9 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <memory>
+
+#include <cassert>
 
 #include "Util.hpp"
 

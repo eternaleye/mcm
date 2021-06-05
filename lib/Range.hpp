@@ -24,8 +24,9 @@
 #ifndef _RANGE_HPP_
 #define _RANGE_HPP_
 
+#include <cassert>
+
 #include "Compressor.hpp"
-#include <assert.h>
 #include "Model.hpp"
 
 // From 7zip, added single bit functions

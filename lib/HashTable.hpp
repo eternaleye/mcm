@@ -21,7 +21,8 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef _HASHTABLE_HPP_
+#define _HASHTABLE_HPP_
 
 // Fixed size hash table.
 template <typename Key, typename Value>
@@ -88,3 +89,5 @@ private:
   size_t entry_pos_;
   static const uint32_t kInvalidIndex = 0xFFFFFFFF;
 };
+
+#endif

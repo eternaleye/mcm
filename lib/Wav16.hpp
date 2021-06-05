@@ -24,8 +24,9 @@
 #ifndef _WAV16_HPP_
 #define _WAV16_HPP_
 
-#include <cstdlib>
 #include <vector>
+
+#include <cstdlib>
 
 #include "DivTable.hpp"
 #include "Entropy.hpp"

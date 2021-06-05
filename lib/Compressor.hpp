@@ -24,16 +24,15 @@
 #ifndef _COMPRESS_HPP_
 #define _COMPRESS_HPP_
 
-#include <cassert>
-#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <list>
 #include <map>
 #include <vector>
-#include <iostream>
-#include <map>
-#include <list>
+
+#include <cassert>
+#include <cmath>
 #include <ctime>
-#include <iomanip>
-#include <malloc.h>
 
 #include "Stream.hpp"
 #include "Util.hpp"

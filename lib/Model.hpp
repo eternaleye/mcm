@@ -24,8 +24,9 @@
 #ifndef _MODEL_HPP_
 #define _MODEL_HPP_
 
+#include <cassert>
+
 #include "Compressor.hpp"
-#include <assert.h>
 #pragma warning(disable : 4146)
 
 #pragma pack(push)

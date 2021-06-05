@@ -24,18 +24,20 @@
 #ifndef _UTIL_HPP_
 #define _UTIL_HPP_
 
-#include <mutex>
-#include <cassert>
-#include <ctime>
-#include <emmintrin.h>
 #include <fstream>
 #include <iostream>
-#include <mmintrin.h>
+#include <mutex>
 #include <ostream>
-#include <stdint.h>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <cassert>
+#include <cstdint>
+#include <ctime>
+
+#include <emmintrin.h>
+#include <mmintrin.h>
 
 #define OVERRIDE
 

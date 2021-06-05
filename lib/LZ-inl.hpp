@@ -21,7 +21,8 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef _LZ_INL_HPP_
+#define _LZ_INL_HPP_
 
 #include "LZ.hpp"
 
@@ -142,3 +143,5 @@ void LZ16<MatchFinder>::decompress(uint8_t* in, uint8_t* out, size_t count) {
 #endif
   } while (out < limit);
 }
+
+#endif

@@ -25,6 +25,7 @@
 #define _MIXER_HPP_
 
 #include <emmintrin.h>
+
 #include "Util.hpp"
 #include "Compressor.hpp"
 

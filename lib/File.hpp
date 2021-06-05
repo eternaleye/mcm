@@ -24,11 +24,12 @@
 #ifndef _FILE_STREAM_HPP_
 #define _FILE_STREAM_HPP_
 
-#include <cassert>
 #include <fstream>
 #include <mutex>
-#include <stdio.h>
 #include <sstream>
+
+#include <cassert>
+#include <cstdio>
 
 #include "Compressor.hpp"
 #include "Stream.hpp"

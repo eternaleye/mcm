@@ -24,9 +24,10 @@
 #ifndef _CM_HPP_
 #define _CM_HPP_
 
-#include <cstdlib>
 #include <type_traits>
 #include <vector>
+
+#include <cstdlib>
 
 #include "BracketModel.hpp"
 #include "Detector.hpp"

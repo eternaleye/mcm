@@ -24,8 +24,10 @@
 #ifndef _TURBO_CM_HPP_
 #define _TURBO_CM_HPP_
 
-#include <cstdlib>
 #include <vector>
+
+#include <cstdlib>
+
 #include "Detector.hpp"
 #include "DivTable.hpp"
 #include "Entropy.hpp"

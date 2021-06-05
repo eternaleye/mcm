@@ -2,6 +2,7 @@
 #define STREAM_HPP_
 
 #include <algorithm>
+
 #include <cstring>
 
 #include "Util.hpp"
