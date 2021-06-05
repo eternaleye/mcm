@@ -70,7 +70,7 @@ class LinearPredictor {
 public:
   template <typename Input>
   Acc Cost(const Input* inputs, Acc actual) const {
-    return f_.Cost<Acc>(*this, inputs, actual);
+    return f_.template Cost<Acc>(*this, inputs, actual);
  }
 
   template <typename Input>
