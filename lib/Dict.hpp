@@ -25,6 +25,7 @@
 #define _DICT_HPP_
 
 #include <algorithm>           // for max, min, sort, copy, count
+#include <chrono>              // for high_resolution_clock, duration, durat...
 #include <iostream>            // for operator<<, basic_ostream, basic_ostre...
 #include <memory>              // for allocator_traits<>::value_type
 #include <string>              // for string, basic_string, hash, operator==
@@ -35,7 +36,6 @@
 #include <cassert>             // for assert
 #include <cstddef>             // for size_t
 #include <cstdint>             // for uint8_t, uint32_t, int64_t
-#include <ctime>               // for clock
 
 #include "Filter.hpp"          // for ByteStreamFilter
 #include "Stream.hpp"          // for ReadMemoryStream, WriteVectorStream
@@ -274,7 +274,7 @@ public:
     static const bool kVerbose = true;
   public:
     void Generate(Builder& builder, CodeWordSet* words, size_t min_occurrences, size_t num_1 = 32, size_t num_2 = 32, size_t num_code_words = 128) {
-      auto start_time = clock();
+      auto start_time = std::chrono::high_resolution_clock::now();
       auto* cw = words->GetCodeWords();
       cw->clear();
 
@@ -359,10 +359,12 @@ public:
         // Remaining chars.
         int64_t remain = 0;
         for (const auto& p : word_pairs) remain += p.Savings(3);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end_time - start_time);
         std::cout << "Constructed dict words=" << count1 << "+" << count2 << "+" << count3 << "=" << occurences
           << " save=" << save1 << "+" << save2 << "+" << save3 << "=" << save1 + save2 + save3
           << " extra=" << remain
-          << " time=" << clockToSeconds(clock() - start_time) << "s"
+          << " time=" << time.count() << "s"
           << std::endl;
       }
     }

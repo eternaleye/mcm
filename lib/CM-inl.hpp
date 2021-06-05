@@ -21,6 +21,7 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <chrono>        // for high_resolution_clock, duration, duration_ca...
 #include <iostream>      // for operator<<, basic_ostream, endl, basic_ostre...
 #include <string>        // for operator<<, char_traits
 #include <utility>       // for pair
@@ -28,7 +29,6 @@
 #include <cassert>       // for assert
 #include <cctype>        // for isspace
 #include <cstdio>        // for EOF
-#include <ctime>         // for clock, clock_t
 
 #include "StateMap.hpp"  // for NSStateMap
 #include "Stream.hpp"    // for BufferedStreamWriter, BufferedStreamReader
@@ -37,7 +37,7 @@ namespace cm {
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
 inline void CM<kInputs, kUseSSE, HistoryType>::init() {
-  const auto start = clock();
+  const auto start = std::chrono::high_resolution_clock::now();
   // Simple model.
   {
     size_t idx = 0;
@@ -357,7 +357,9 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
   if (kStatistics) {
     for (auto& c : mixer_skip_) c = 0;
     other_count_ = match_count_ = non_match_count_ = 0;
-    std::cout << "Setup took: " << clock() - start << std::endl;
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    std::cout << "Setup took: " << time.count() << "s" << std::endl;
     lzp_bit_match_bytes_ = lzp_bit_miss_bytes_ = lzp_miss_bytes_ = normal_bytes_ = 0;
     for (auto& len : match_hits_) len = 0;
     for (auto& len : match_miss_) len = 0;
@@ -381,14 +383,16 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Strea
   init();
   ent = Range7();
   if (use_huffman) {
-    const clock_t start = clock();
+    const auto start = std::chrono::high_resolution_clock::now();
     size_t freqs[256] = { 1 };
     std::cout << "Building huffman tree" << std::endl;
     Huffman::HuffTree* tree = Huffman::Tree<uint32_t>::BuildPackageMerge(freqs, 256, huffman_len_limit);
     tree->PrintRatio(std::cout, "LL");
     Huffman::writeTree(ent, sout, tree, 256, huffman_len_limit);
     huff.build(tree);
-    std::cout << "Building huffman tree took: " << clock() - start << " MS" << std::endl;
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::milli> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    std::cout << "Building huffman tree took: " << time.count() << "ms" << std::endl;
   }
   for (;max_count > 0; --max_count) {
     uint32_t c;

@@ -25,6 +25,7 @@
 #define _WORD_COUNTER_HPP_
 
 #include <algorithm>   // for copy, fill
+#include <chrono>      // for high_resolution_clock, duration, duration_cast
 #include <iostream>    // for operator<<, endl, basic_ostream, basic_ostream...
 #include <new>         // for operator new
 #include <numeric>     // for accumulate
@@ -34,7 +35,6 @@
 #include <cassert>     // for assert
 #include <cstddef>     // for size_t
 #include <cstdint>     // for uint8_t, uint32_t, int64_t
-#include <ctime>       // for clock
 
 #include "Memory.hpp"  // for MemMap
 #include "Util.hpp"    // for FrequencyCounter, MakeUpperCase, IsUpperCase
@@ -198,7 +198,7 @@ public:
   // Mark compact.
   void GC(size_t min_count) {
     auto start_size = Used();
-    auto start = clock();
+    const auto start = std::chrono::high_resolution_clock::now();
     auto cur = begin_;
     auto dest = begin_;
     while (cur < end_) {
@@ -216,8 +216,10 @@ public:
     Visit([this](Entry* entry) {
       HashEntry(entry);
     });
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
     // Remove all words that have <= min_count_.
-    std::cerr << std::endl << "GC " << prettySize(start_size) << " -> " << Used() << " in " << clockToSeconds(clock() - start) << "S" << std::endl;
+    std::cerr << std::endl << "GC " << prettySize(start_size) << " -> " << Used() << " in " << time.count() << "s" << std::endl;
   }
 
   void AddWord(const uint8_t* begin, const uint8_t* end, WordCC cc_type) {

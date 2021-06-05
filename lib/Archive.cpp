@@ -24,6 +24,7 @@
 #include "Archive.hpp"
 
 #include <algorithm>           // for max, copy, sort, min, remove_if, equal
+#include <chrono>              // for high_resolution_clock, duration, durat...
 #include <iostream>            // for operator<<, basic_ostream, endl, basic...
 #include <limits>              // for numeric_limits
 #include <list>                // for list
@@ -34,7 +35,6 @@
 #include <cctype>              // for isdigit
 #include <cstddef>             // for size_t
 #include <cstdint>             // for uint64_t, uint32_t, uint8_t
-#include <ctime>               // for clock, CLOCKS_PER_SEC
 
 #include "CM.hpp"              // for CM
 #include "CM-inl.hpp"          // for CM::CM<kInputs, kUseSSE, HistoryType>
@@ -460,7 +460,7 @@ private:
 void testFilter(Stream* stream, Analyzer* analyzer) {
   std::vector<uint8_t> comp;
   stream->seek(0);
-  auto start = clock();
+  auto start = std::chrono::high_resolution_clock::now();
   {
     auto& builder = analyzer->getDictBuilder();
     Dict::CodeWordGeneratorFast generator;
@@ -473,9 +473,11 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
     store.compress(dict_filter, &wvs, std::numeric_limits<uint64_t>::max());
   }
   uint64_t size = stream->tell();
-  std::cout << "Filter comp " << size << " -> " << comp.size() << " in " << clockToSeconds(clock() - start) << "s" << std::endl;
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+  std::cout << "Filter comp " << size << " -> " << comp.size() << " in " << time.count() << "s" << std::endl;
   // Test revser speed
-  start = clock();
+  start = std::chrono::high_resolution_clock::now();
   stream->seek(0);
   VoidWriteStream voids;
   {
@@ -485,9 +487,11 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
     store.decompress(&rms, &filter_out, size);
     filter_out.flush();
   }
-  std::cout << "Void decomp " << voids.tell() << " <- " << comp.size() << " in " << clockToSeconds(clock() - start) << "s" << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+  std::cout << "Void decomp " << voids.tell() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl;
   // Test reverse.
-  start = clock();
+  start = std::chrono::high_resolution_clock::now();
   stream->seek(0);
   VerifyStream vs(stream, size);
   {
@@ -498,7 +502,9 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
     filter_out.flush();
     vs.summary();
   }
-  std::cout << "Verify decomp " << vs.tell() << " <- " << comp.size() << " in " << clockToSeconds(clock() - start) << "s" << std::endl << std::endl;
+  end = std::chrono::high_resolution_clock::now();
+  time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+  std::cout << "Verify decomp " << vs.tell() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl << std::endl;
 }
 
 static inline std::string smartExt(const std::string& ext) {
@@ -555,7 +561,7 @@ public:
 
 class AnalyzerProgressThread : public AutoUpdater {
 public:
-  AnalyzerProgressThread() : stream_(nullptr), start_(clock()), add_bytes_(0), add_files_(0) {
+  AnalyzerProgressThread() : stream_(nullptr), start_(std::chrono::high_resolution_clock::now()), add_bytes_(0), add_files_(0) {
   }
 
   void setStream(Stream* stream) {
@@ -571,18 +577,21 @@ public:
 
   }
   virtual void print() {
-    auto cur_time = clock();
+    auto cur_time = std::chrono::high_resolution_clock::now();
     auto time_delta = cur_time - start_;
-    if (!time_delta) ++time_delta;
+    if (time_delta == std::chrono::high_resolution_clock::duration::zero()) {
+      time_delta = std::chrono::high_resolution_clock::duration::min();
+    }
+    const std::chrono::duration<double, std::ratio<1>> delta_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(time_delta);
     const uint64_t cur_bytes = (stream_ != nullptr ? stream_->tell() : 0u) + add_bytes_;
-    const uint32_t rate = uint32_t(double(cur_bytes / KB) / (double(time_delta) / double(CLOCKS_PER_SEC)));
+    const uint32_t rate = uint32_t(double(cur_bytes / KB) / delta_secs.count());
     std::cout << "Analyzed " << add_files_ << " size=" << prettySize(cur_bytes) << " " << rate << "KB/s   ";
     std::cout << "\t\r" << std::flush;
   }
 
 private:
   Stream* stream_;
-  size_t start_;
+  std::chrono::high_resolution_clock::time_point start_;
   uint64_t add_bytes_;
   uint64_t add_files_;
 };
@@ -695,31 +704,35 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
   std::list<std::string> prefixes;
   blocks_.clear();
   // Enumerate files
-  auto start = clock();
-  std::cout << "Enumerating files" << std::endl;
-  for (auto f : in_files) {
-    const std::string cur_name(f.getName());
-    const bool absolute_path = IsAbsolutePath(cur_name);
-    if (absolute_path) {
-      auto pair = GetFileName(cur_name);
-      prefixes.push_back(pair.first);
-      f.setPrefix(&prefixes.back());
-      f.SetName(pair.second);
-    }
-    files_.push_back(f);
-    // If abslute, take prefix directory as prefix.
-    if (f.isDir()) {
+  {
+    const auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "Enumerating files" << std::endl;
+    for (auto f : in_files) {
+      const std::string cur_name(f.getName());
+      const bool absolute_path = IsAbsolutePath(cur_name);
       if (absolute_path) {
         auto pair = GetFileName(cur_name);
         prefixes.push_back(pair.first);
-        files_.addDirectoryRec(pair.second, &prefixes.back());
-      } else {
-        files_.addDirectoryRec(f.getName());
+        f.setPrefix(&prefixes.back());
+        f.SetName(pair.second);
+      }
+      files_.push_back(f);
+      // If abslute, take prefix directory as prefix.
+      if (f.isDir()) {
+        if (absolute_path) {
+          auto pair = GetFileName(cur_name);
+          prefixes.push_back(pair.first);
+          files_.addDirectoryRec(pair.second, &prefixes.back());
+        } else {
+          files_.addDirectoryRec(f.getName());
+        }
       }
     }
+    std::sort(files_.begin(), files_.end(), CompareFileInfoName());
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    std::cout << "Enumerating took " << time.count() << "s" << std::endl;
   }
-  std::sort(files_.begin(), files_.end(), CompareFileInfoName());
-  std::cout << "Enumerating took " << clockToSeconds(clock() - start) << "s" << std::endl;
 
   for (size_t i = 0; i < Detector::kProfileCount; ++i) {
     Algorithm a(options_, static_cast<Detector::Profile>(i));
@@ -729,7 +742,7 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
   {
     // Analyze enumerated and construct blocks.
     analyzer.setOpt(opt_var_);
-    start = clock();
+    const auto start = std::chrono::high_resolution_clock::now();
     std::cout << "Analyzing " << files_.size() << " files" << std::endl;
     size_t file_idx = 0;
     uint64_t total_size = 0;
@@ -776,7 +789,9 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
     }
     std::cout << std::endl;
     analyzer.dump();
-    std::cout << "Analyzing took " << clockToSeconds(clock() - start) << "s" << std::endl << std::endl;
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    std::cout << "Analyzing took " << time.count() << "s" << std::endl << std::endl;
   }
   // Remove empty blocks.
   auto it = std::remove_if(blocks_.begin(), blocks_.end(), [](const std::unique_ptr<SolidBlock>& b) { return b->total_size_ == 0; });
@@ -791,7 +806,7 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
   uint64_t total = 0;
   for (const auto& block : blocks_) {
     auto start_pos = stream_->tell();
-    auto start = clock();
+    const auto start = std::chrono::high_resolution_clock::now();
     auto out_start = stream_->tell();
     for (size_t i = 0; i < kSizePad; ++i) stream_->put(0);
     FileSegmentStreamFileList segstream(&block->segments_, 0, &files_, false, false);
@@ -822,9 +837,11 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
     stream_->seek(after_pos);
 
     // Dump some info.
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
     std::cout << std::endl;
     std::cout << "Compressed " << formatNumber(segstream.tell()) << " -> " << formatNumber(after_pos - out_start)
-      << " in " << clockToSeconds(clock() - start) << "s" << std::endl << std::endl;
+      << " in " << time.count() << "s" << std::endl << std::endl;
     check(segstream.tell() == block->total_size_);
     total += block->total_size_;
   }
@@ -866,7 +883,7 @@ void Archive::decompress(const std::string& out_dir, bool verify) {
       stream_->get();
     }
 
-    auto start = clock();
+    const auto start = std::chrono::high_resolution_clock::now();
     FileSegmentStreamFileList segstream(&block->segments_, 0u, &files_, true, verify);
     VerifyFileSegmentStreamFileList verify_segstream(&block->segments_, &files_, &remain_bytes);
 
@@ -890,8 +907,10 @@ void Archive::decompress(const std::string& out_dir, bool verify) {
       if (filter.get() != nullptr) filter->flush();
     }
     differences += verify_segstream.totalDifferences();
+    const auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
     std::cout << std::endl << "Decompressed " << formatNumber(out_stream->tell()) << " <- " << formatNumber(stream_->tell() - out_start)
-      << " in " << clockToSeconds(clock() - start) << "s" << std::endl << std::endl;
+      << " in " << time.count() << "s" << std::endl << std::endl;
   }
   if (verify) {
     for (size_t i = 0; i < files_.size(); ++i) {

@@ -22,6 +22,7 @@
 */
 
 #include <algorithm>        // for copy_n, max, min, copy
+#include <chrono>           // for steady_clock, seconds, duration_cast, dur...
 #include <iomanip>          // for operator<<, setprecision
 #include <iostream>         // for operator<<, basic_ostream, endl, basic_os...
 #include <limits>           // for numeric_limits
@@ -33,7 +34,6 @@
 #include <cassert>          // for assert
 #include <cstddef>          // for size_t
 #include <cstdint>          // for uint64_t, uint32_t, uint8_t
-#include <ctime>            // for clock, clock_t
 
 #include "Archive.hpp"      // for CompressionOptions, Archive, Archive::Header
 #include "File.hpp"         // for FileInfo, File
@@ -42,7 +42,7 @@
 #include "MatchFinder.hpp"  // for FastMatchFinder, MemoryMatchFinder
 #include "Stream.hpp"       // for VoidWriteStream
 #include "Tests.hpp"        // for RunAllTests
-#include "Util.hpp"         // for trimDir, formatNumber, clockToSeconds
+#include "Util.hpp"         // for trimDir, formatNumber
 
 class Compressor;
 
@@ -316,7 +316,7 @@ int main(int argc, char* argv[]) {
     // auto* compressor = new MemCopyCompressor;
     auto* compressor = new LZ16<FastMatchFinder<MemoryMatchFinder>>;
     auto out_buffer = new uint8_t[compressor->getMaxExpansion(length)];
-    uint32_t comp_start = clock();
+    const auto comp_start = std::chrono::high_resolution_clock::now();
     uint32_t comp_size;
     static const bool opt_mode = false;
     if (opt_mode) {
@@ -339,17 +339,19 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    const uint32_t comp_end = clock();
-    std::cout << "Done compressing " << length << " -> " << comp_size << " = " << float(double(length) / double(comp_size)) << " rate: "
-      << prettySize(static_cast<uint64_t>(long_length * kCompIterations / clockToSeconds(comp_end - comp_start))) << "/s" << std::endl;
+    const auto comp_end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> comp_time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(comp_end - comp_start);
+    std::cout << "Compression took: " << comp_time.count() << "s reduction: " << length << " -> " << comp_size << " = " << float(double(length) / double(comp_size)) << " rate: "
+      << prettySize(static_cast<uint64_t>(long_length * kCompIterations / comp_time.count())) << "/s" << std::endl;
     std::fill(in_buffer, in_buffer + length, 0);
-    const uint32_t decomp_start = clock();
+    const auto decomp_start = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 0; i < kDecompIterations; ++i) {
       compressor->decompress(out_buffer, in_buffer, length);
     }
-    const uint32_t decomp_end = clock();
-    std::cout << "Decompression took: " << decomp_end - comp_end << " rate: "
-      << prettySize(static_cast<uint64_t>(long_length * kDecompIterations / clockToSeconds(decomp_end - decomp_start))) << "/s" << std::endl;
+    const auto decomp_end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> decomp_time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(decomp_end - decomp_start);
+    std::cout << "Decompression took: " << decomp_time.count() << "s rate: "
+      << prettySize(static_cast<uint64_t>(long_length * kDecompIterations / decomp_time.count())) << "/s" << std::endl;
     index = 0;
     for (const auto& file : options.files) {
       File f(file.getName(), std::ios_base::in | std::ios_base::binary);
@@ -402,9 +404,9 @@ int main(int argc, char* argv[]) {
       size_t bads = 0;
       size_t best_cur = 0;
       static constexpr size_t kAvgCount = 2;
-      double total[kAvgCount] = {};
+      std::chrono::high_resolution_clock::duration total[kAvgCount] = {};
       size_t count[kAvgCount] = {};
-      double min_time = std::numeric_limits<double>::max();
+      std::chrono::high_resolution_clock::duration min_time{std::numeric_limits<std::chrono::high_resolution_clock::rep>::max()};
       const bool kPerm = false;
       std::random_device randomness;
       std::uniform_int_distribution<size_t> index_increments{1, kMaxIndex};
@@ -443,7 +445,7 @@ int main(int argc, char* argv[]) {
       } else {
         for (auto o : opts) check(o <= kMaxIndex);
         for (size_t i = 0;; ++i) {
-          const clock_t start = clock();
+          const auto start = std::chrono::high_resolution_clock::now();
           VoidWriteStream fout;
           Archive archive(&fout, options.options_);
           if (!archive.setOpts(opts)) {
@@ -451,7 +453,7 @@ int main(int argc, char* argv[]) {
           }
           uint64_t in_bytes = archive.compress(options.files);
           if (in_bytes == 0) continue;
-          const double time = clockToSeconds(clock() - start);
+          const auto time = std::chrono::high_resolution_clock::now() - start;
           total[i % kAvgCount] += time;
           min_time = std::min(min_time, time);
           const auto size = fout.tell();
@@ -475,15 +477,17 @@ int main(int argc, char* argv[]) {
           }
 
           std::ostringstream ss;
-          double avgs[kAvgCount] = {};
+          std::chrono::high_resolution_clock::duration avgs[kAvgCount] = {};
           for (size_t i = 0; i < kAvgCount; ++i) {
-            if (count[i] != 0) avgs[i] = total[i] / double(count[i]);
+            if (count[i] != 0) avgs[i] = total[i] / count[i];
           }
-          double avg = std::accumulate(total, total + kAvgCount, 0.0) / double(std::accumulate(count, count + kAvgCount, 0u));
-          ss << " -> " << formatNumber(size) << " best " << best_var << " in " << time << "s avg "
-             << avg << "(";
-          for (double d : avgs) ss << d << ",";
-          ss << ") min " << min_time;
+          auto avg = std::accumulate(total, total + kAvgCount, std::chrono::high_resolution_clock::duration(0)) / std::accumulate(count, count + kAvgCount, 0u);
+          const std::chrono::duration<double, std::ratio<1>> time_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(time);
+          const std::chrono::duration<double, std::ratio<1>> avg_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(avg);
+          ss << " -> " << formatNumber(size) << " best " << best_var << " in " << time_secs.count() << "s avg "
+             << avg_secs.count() << "(";
+          for (auto& d : avgs) ss << d.count() << ",";
+          ss << ") min " << min_time.count();
 
           opt_file << ss.str() << std::endl << std::flush;
 
@@ -492,7 +496,7 @@ int main(int argc, char* argv[]) {
         }
       }
     } else {
-      const clock_t start = clock();
+      const auto start = std::chrono::high_resolution_clock::now();
       if (err = fout.open(out_file, std::ios_base::out | std::ios_base::binary)) {
         std::cerr << "Error opening: " << out_file << " (" << errstr(err) << ")" << std::endl;
         return 2;
@@ -501,9 +505,9 @@ int main(int argc, char* argv[]) {
       std::cout << "Compressing to " << out_file << " mode=" << options.options_.comp_level_ << " mem=" << options.options_.mem_usage_ << std::endl;
       Archive archive(&fout, options.options_);
       uint64_t in_bytes = archive.compress(options.files);
-      clock_t time = clock() - start;
+      const std::chrono::duration<double, std::ratio<1>> time =  std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::high_resolution_clock::now() - start);
       std::cout << "Done compressing " << formatNumber(in_bytes) << " -> " << formatNumber(fout.tell())
-        << " in " << std::setprecision(3) << clockToSeconds(time) << "s"
+        << " in " << std::setprecision(3) << time.count() << "s"
         << " bpc=" << double(fout.tell()) * 8.0 / double(in_bytes) << std::endl;
 
       fout.close();

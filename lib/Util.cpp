@@ -54,10 +54,6 @@ std::string prettySize(uint64_t size) {
   return oss.str();
 }
 
-double clockToSeconds(clock_t c) {
-  return double(c) / double(CLOCKS_PER_SEC);
-}
-
 std::string errstr(int err) {
   return std::system_error(err, std::system_category()).what();
 }

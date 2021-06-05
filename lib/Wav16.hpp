@@ -24,6 +24,7 @@
 #ifndef _WAV16_HPP_
 #define _WAV16_HPP_
 
+#include <chrono>          // for high_resolution_clock, duration, duration_...
 #include <iostream>        // for operator<<, basic_ostream, basic_ostream<>...
 #include <string>          // for operator<<
 #include <vector>          // for vector
@@ -32,7 +33,6 @@
 #include <cmath>           // for log2, pow
 #include <cstdint>         // for int16_t, uint32_t, uint16_t, uint64_t
 #include <cstdlib>         // for size_t, abs
-#include <ctime>           // for clock
 
 #include "Compressor.hpp"  // for Compressor
 #include "GD.hpp"          // for LinearPredictor, LogPredictor
@@ -224,7 +224,7 @@ public:
     float cost;
     const bool kVerbose = false;
     std::vector<float> last_delta(num_grad);
-    auto start = clock();
+    auto start = std::chrono::high_resolution_clock::now();
     for (size_t iter = 0; iter < iterations; ++iter) {
       if (kVerbose || iter == iterations - 1) {
         cost = p.AverageCost(&vars[0], &actual[0], num_samples);
@@ -245,7 +245,9 @@ public:
     // std::cout << "PREDICTOR " << p.DumpWeights() << std::endl;
     // for (float f : coeff) std::cout << -f << " "; std::cout << std::endl;
     for (size_t i = 0; i < num_grad; ++i) last_w[i] = p.GetWeight(i);
-    // std::cerr << " cost=" << cost << " fvar=" << fvar << " learn=" << learn << " " << p.DumpWeights() << " " << clockToSeconds(clock() - start) << "s" << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    // std::cerr << " cost=" << cost << " fvar=" << fvar << " learn=" << learn << " " << p.DumpWeights() << " " << time.count() << "s" << std::endl;
     // Encode block.
     static const size_t kLastMask = 7;
     int16_t last[kLastMask + 1] = {};

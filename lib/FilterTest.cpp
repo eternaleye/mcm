@@ -22,6 +22,7 @@
 */
 
 #include <algorithm>           // for min, fill, max
+#include <chrono>              // for high_resolution_clock, duration, durat...
 #include <iostream>            // for operator<<, basic_ostream, basic_ostre...
 #include <limits>              // for numeric_limits
 #include <numeric>             // for accumulate
@@ -29,8 +30,8 @@
 #include <string>              // for operator<<, char_traits
 #include <vector>              // for vector
 
+#include <cstddef>             // for size_t
 #include <cstdint>             // for uint8_t, uint32_t, uint64_t, uint16_t
-#include <ctime>               // for clock, size_t, clock_t
 
 #include "CM.hpp"              // for CM
 #include "CM-inl.hpp"          // for CM::CM<kInputs, kUseSSE, HistoryType>
@@ -275,7 +276,7 @@ void benchFilter(const std::vector<uint8_t>& data) {
   const uint64_t expected_sum = std::accumulate(data.begin(), data.end(), 0UL);
   std::vector<uint8_t> out_data;
   out_data.resize(20 * MB + static_cast<uint32_t>(data.size() * FilterType::getMaxExpansion() * 1.2));
-  uint64_t start = clock();
+  auto outer_start = std::chrono::high_resolution_clock::now();
   uint64_t write_count;
   uint64_t old_sum = 0;
   uint32_t best_size = std::numeric_limits<uint32_t>::max();
@@ -286,7 +287,7 @@ void benchFilter(const std::vector<uint8_t>& data) {
     FilterType f(&rms); // , 1 + (i & 3), 1 + (i / 4));
     // f.setSpecific(100 + i);
     comp.setOpt(i);
-    clock_t start = clock();
+    auto start = std::chrono::high_resolution_clock::now();
     comp.compress(&f, &wms, std::numeric_limits<uint64_t>::max());
     write_count = wms.tell();
     f.dumpInfo();
@@ -294,7 +295,9 @@ void benchFilter(const std::vector<uint8_t>& data) {
       best_size = static_cast<uint32_t>(write_count);
       best_spec = i;
     }
-    std::cout << "Cur=" << i << " size=" << write_count << " best(" << best_spec << ")=" << best_size << " time=" << clock() - start << std::endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
+    std::cout << "Cur=" << i << " size=" << write_count << " best(" << best_spec << ")=" << best_size << " time=" << time.count() << "s" << std::endl;
 #if 0
     uint64_t checksum = std::accumulate(&out_data[0], &out_data[write_count], 0UL);
     if (old_sum != 0) {
@@ -303,11 +306,13 @@ void benchFilter(const std::vector<uint8_t>& data) {
     old_sum = checksum;
 #endif
   }
-  std::cout << "Forward: " << data.size() << "->" << write_count << " rate=" << prettySize(computeRate(data.size() * kIterations, clock() - start)) << "/S" << std::endl;
+  auto outer_end = std::chrono::high_resolution_clock::now();
+  const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(outer_end - outer_start);
+  std::cout << "Forward: " << data.size() << "->" << write_count << " rate=" << prettySize(computeRate(data.size() * kIterations, time.count())) << "/s" << std::endl;
 
   std::vector<uint8_t> result;
   result.resize(data.size());
-  start = clock();
+  outer_start = std::chrono::high_resolution_clock::now();
   for (uint32_t i = 0; i < kIterations; ++i) {
     WriteMemoryStream wvs(&result[0]);
     FilterType reverse_filter(&wvs);
@@ -315,8 +320,10 @@ void benchFilter(const std::vector<uint8_t>& data) {
     comp.decompress(&read_stream, &reverse_filter, std::numeric_limits<uint64_t>::max());
     reverse_filter.flush();
   }
-  uint64_t rate = computeRate(data.size() * kIterations, clock() - start);
-  std::cout << "Reverse: " << prettySize(rate) << "/S" << std::endl;
+  outer_end = std::chrono::high_resolution_clock::now();
+  time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(outer_end - outer_start);
+  uint64_t rate = computeRate(data.size() * kIterations, time.count());
+  std::cout << "Reverse: " << prettySize(rate) << "/s" << std::endl;
   // Check tht the shit matches.
   check(result.size() == data.size());
   for (uint32_t i = 0; i < data.size(); ++i) {

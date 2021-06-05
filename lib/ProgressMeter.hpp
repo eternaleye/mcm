@@ -33,21 +33,21 @@
 #include <thread>              // for thread
 #include <utility>             // for swap
 
+#include <cstddef>             // for size_t
 #include <cstdint>             // for uint64_t, uint8_t, uintptr_t, uint32_t
 #include <cstdio>              // for EOF
-#include <ctime>               // for size_t, clock, CLOCKS_PER_SEC, clock_t
 
 #include "Stream.hpp"          // for Stream
 #include "Util.hpp"            // for KB, ALWAYS_INLINE
 
 class ProgressMeter {
   uint64_t count;
-  clock_t start;
+  std::chrono::high_resolution_clock::time_point start;
   bool encode;
 public:
   ProgressMeter(bool encode = true)
     : count(0)
-    , start(clock())
+    , start(std::chrono::high_resolution_clock::now())
     , encode(encode) {
   }
 
@@ -74,12 +74,13 @@ public:
   // Surprisingly expensive to call...
   void printRatio(uint64_t comp_size, uint64_t in_size, const std::string& extra) const {
     const auto ratio = double(comp_size) / in_size;
-    auto cur_time = clock();
+    auto cur_time = std::chrono::high_resolution_clock::now();
     auto time_delta = cur_time - start;
-    if (!time_delta) {
-      ++time_delta;
+    if (time_delta == std::chrono::high_resolution_clock::duration::zero()) {
+        time_delta = std::chrono::high_resolution_clock::duration::min();
     }
-    const uint32_t rate = uint32_t(double(in_size / KB) / (double(time_delta) / double(CLOCKS_PER_SEC)));
+    const std::chrono::duration<double, std::ratio<1>> delta_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(time_delta);
+    const uint32_t rate = uint32_t(double(in_size / KB) / delta_secs.count());
     std::ostringstream oss;
     oss << in_size / KB << "KB ";
     if (comp_size > KB) {

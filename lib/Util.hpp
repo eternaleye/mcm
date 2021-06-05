@@ -36,7 +36,6 @@
 #include <cassert>      // for assert
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t, uint8_t, uint64_t, int64_t
-#include <ctime>        // for clock_t
 
 #include <xmmintrin.h>  // for __m128, _mm_loadu_ps, _mm_storeu_ps
 
@@ -394,7 +393,6 @@ private:
 
 std::string prettySize(uint64_t size);
 std::string formatNumber(uint64_t n);
-double clockToSeconds(clock_t c);
 std::string errstr(int err);
 uint64_t computeRate(uint64_t size, uint64_t delta_time);
 std::vector<uint8_t> loadFile(const std::string& name, uint32_t max_size = 0xFFFFFFF);
