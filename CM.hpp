@@ -822,7 +822,7 @@ namespace cm {
       static const size_t kCount = 1 << 16;
       int64_t total[kCount];
       std::fill_n(total, kCount, -1);
-      return DPOptimalLeaves(cost, total, 0, 64);
+      return OptimalByteStates(cost, total, 0, 64);
     }
 
     int NextNibbleLeaf(int node, size_t next) {
