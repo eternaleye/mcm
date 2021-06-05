@@ -24,14 +24,20 @@
 #ifndef _LZ_HPP_
 #define _LZ_HPP_
 
-#include "CyclicBuffer.hpp"
-#include "HashTable.hpp"
-#include "Log.hpp"
-#include "MatchFinder.hpp"
-#include "Mixer.hpp"
-#include "Model.hpp"
-#include "Range.hpp"
-#include "StateMap.hpp"
+#include <vector>            // for vector
+
+#include <cstddef>           // for size_t
+#include <cstdint>           // for uint8_t, uint32_t, uint64_t
+
+#include "Compressor.hpp"    // for MemoryCompressor, Compressor
+#include "CyclicBuffer.hpp"  // for CyclicBuffer, CyclicDeque
+#include "Log.hpp"           // for ss_table
+#include "MatchFinder.hpp"   // for Match
+#include "Mixer.hpp"         // for Mixer
+#include "Model.hpp"         // for fastBitModel
+#include "Range.hpp"         // for Range7
+#include "Stream.hpp"        // for Stream (ptr only), BufferedStreamReader
+#include "Util.hpp"          // for ALWAYS_INLINE, KB, RoundUp, rotate_left
 
 template <typename MF, typename Encoder, typename Decoder>
 class StreamingLZCombo : public Compressor {

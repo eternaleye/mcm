@@ -24,8 +24,12 @@
 #ifndef _JPEG_HPP_
 #define _JPEG_HPP_
 
-#include "Compressor.hpp"
-#include "CyclicBuffer.hpp"
+#include <cstdint>         // for uint8_t, uint32_t
+
+#include "Compressor.hpp"  // for Compressor
+#include "Util.hpp"        // for MakeWord, ALWAYS_INLINE, OffsetBlock (ptr ...
+
+template <typename Buffer> class Window;
 
 class JPEGCompressor : public Compressor {
 public:

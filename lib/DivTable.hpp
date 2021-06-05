@@ -24,6 +24,10 @@
 #ifndef _DIV_TABLE_HPP_
 #define _DIV_TABLE_HPP_
 
+#include <cstdint>   // for uint32_t
+
+#include "Util.hpp"  // for ALWAYS_INLINE
+
 template <typename T, const uint32_t shift_, const uint32_t size_>
 class DivTable {
   T data[size_];

@@ -24,18 +24,13 @@
 #ifndef _COMPRESS_HPP_
 #define _COMPRESS_HPP_
 
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <map>
-#include <vector>
+#include <vector>      // for vector
 
-#include <cassert>
-#include <cmath>
-#include <ctime>
+#include <cstddef>     // for size_t
+#include <cstdint>     // for uint8_t, uint64_t, uint32_t
 
-#include "Stream.hpp"
-#include "Util.hpp"
+#include "Stream.hpp"  // for Stream (ptr only), WriteMemoryStream, ReadMemo...
+#include "Util.hpp"    // for MB
 
 class CompressionJob {
 public:

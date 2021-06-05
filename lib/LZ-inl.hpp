@@ -24,7 +24,10 @@
 #ifndef _LZ_INL_HPP_
 #define _LZ_INL_HPP_
 
-#include "LZ.hpp"
+#include <algorithm>  // for min, max
+#include <iostream>   // for operator<<, basic_ostream, basic_ostream<>::__o...
+
+#include <cassert>    // for assert
 
 static inline uint8_t* WriteMatch(uint8_t* out, const uint8_t* in, size_t non_match_len, size_t match_len, uint16_t offset) {
   assert(match_len <= 15);

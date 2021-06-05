@@ -24,9 +24,16 @@
 #ifndef _X86_BINARY_HPP_
 #define _X86_BINARY_HPP_
 
-#include <memory>
+#include <algorithm>   // for copy
+#include <iostream>    // for operator<<, endl, basic_ostream<>::__ostream_type
 
-#include "Filter.hpp"
+#include <cstddef>     // for size_t
+#include <cstdint>     // for uint8_t, uint32_t, int32_t
+
+#include "Filter.hpp"  // for ByteBufferFilter, ByteStreamFilter
+#include "Util.hpp"    // for KB, check
+
+class Stream;
 
 // Encoding format:
 // E8/E9 FF/00 XX XX XX

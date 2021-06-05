@@ -24,7 +24,8 @@
 #ifndef _ENTROPY_HPP_
 #define _ENTROPY_HPP_
 
-#include <cmath>
+#include <cmath>    // for log
+#include <cstdint>  // for uint32_t
 
 template <const uint32_t shift = 12, const uint32_t fp_shift_ = 8>
 class SymbolCostTable {

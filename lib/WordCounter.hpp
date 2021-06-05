@@ -24,11 +24,20 @@
 #ifndef _WORD_COUNTER_HPP_
 #define _WORD_COUNTER_HPP_
 
-#include <string>
-#include <vector>
+#include <algorithm>   // for fill
+#include <iostream>    // for operator<<, endl, basic_ostream, basic_ostream...
+#include <new>         // for operator new
+#include <numeric>     // for accumulate
+#include <string>      // for string, operator<, operator<<, char_traits
+#include <vector>      // for vector
 
-#include "Memory.hpp"
-#include "Util.hpp"
+#include <cassert>     // for assert
+#include <cstdint>     // for uint8_t, uint32_t, int64_t
+#include <cstring>     // for size_t, memcmp, memcpy, memmove
+#include <ctime>       // for clock
+
+#include "Memory.hpp"  // for MemMap
+#include "Util.hpp"    // for FrequencyCounter, MakeUpperCase, IsUpperCase
 
 // Word capital conversion.
 enum WordCC {

@@ -24,11 +24,21 @@
 #ifndef _PROGRESS_METER_HPP_
 #define _PROGRESS_METER_HPP_
 
-#include <condition_variable>
-#include <iostream>
-#include <thread>
+#include <chrono>              // for duration, operator+, operator>=, time_...
+#include <condition_variable>  // for condition_variable
+#include <iomanip>             // for operator<<, setprecision
+#include <iostream>            // for operator<<, basic_ostream, ostringstream
+#include <mutex>               // for mutex, unique_lock
+#include <string>              // for operator<<, string
+#include <thread>              // for thread
+#include <utility>             // for swap
 
-#include "Stream.hpp"
+#include <cstdint>             // for uint64_t, uint8_t, uintptr_t, uint32_t
+#include <cstdio>              // for EOF
+#include <ctime>               // for size_t, clock, CLOCKS_PER_SEC, clock_t
+
+#include "Stream.hpp"          // for Stream
+#include "Util.hpp"            // for KB, ALWAYS_INLINE
 
 class ProgressMeter {
   uint64_t count;

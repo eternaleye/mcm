@@ -24,23 +24,29 @@
 #ifndef _TURBO_CM_HPP_
 #define _TURBO_CM_HPP_
 
-#include <vector>
+#include <algorithm>         // for max
+#include <iostream>          // for endl, basic_ostream<>::__ostream_type, cout
+#include <vector>            // for vector
 
-#include <cstdlib>
+#include <cassert>           // for assert
+#include <cstdio>            // for EOF
+#include <cstdint>           // for uint8_t, uint32_t, uint64_t
+#include <cstdlib>           // for size_t
 
-#include "Detector.hpp"
-#include "DivTable.hpp"
-#include "Entropy.hpp"
-#include "Huffman.hpp"
-#include "Log.hpp"
-#include "MatchModel.hpp"
-#include "Memory.hpp"
-#include "Mixer.hpp"
-#include "Model.hpp"
-#include "Range.hpp"
-#include "StateMap.hpp"
-#include "Util.hpp"
-#include "WordModel.hpp"
+#include "Compressor.hpp"    // for Compressor
+#include "CyclicBuffer.hpp"  // for CyclicBuffer
+#include "Log.hpp"           // for ss_table
+#include "MatchModel.hpp"    // for MatchModel
+#include "Memory.hpp"        // for MemMap
+#include "Mixer.hpp"         // for MixerArray, Mixer
+#include "Model.hpp"         // for fastBitModel
+#include "Range.hpp"         // for Range7
+#include "Reorder.hpp"       // for ReorderMap
+#include "SSE.hpp"           // for SSE
+#include "StateMap.hpp"      // for NSStateMap
+#include "Stream.hpp"        // for BufferedStreamWriter, BufferedStreamReader
+#include "Util.hpp"          // for no_alias, KB, Clamp, MB, ALWAYS_INLINE
+#include "WordModel.hpp"     // for WordModel
 
 template <const uint32_t level = 6>
 class TurboCM : public Compressor {

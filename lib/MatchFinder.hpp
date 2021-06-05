@@ -24,10 +24,16 @@
 #ifndef _MATCH_FINDER_HPP_
 #define _MATCH_FINDER_HPP_
 
-#include <algorithm>
+#include <algorithm>         // for min
+#include <utility>           // for forward
+#include <vector>            // for vector
 
-#include "CyclicBuffer.hpp"
-#include "Util.hpp"
+#include <cstdint>           // for uint8_t, uint32_t
+#include <cstdio>            // for EOF
+#include <cstdlib>           // for size_t, abort
+
+#include "CyclicBuffer.hpp"  // for CyclicDeque, CyclicBuffer
+#include "Util.hpp"          // for ALWAYS_INLINE, StaticArray, rotate_left, KB
 
 // Generic match.
 class Match {

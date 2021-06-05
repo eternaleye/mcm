@@ -21,15 +21,25 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Compressor.hpp"
-#include "CM-inl.hpp"
-#include "DeltaFilter.hpp"
-#include "Filter.hpp"
-#include "TurboCM.hpp"
-#include "X86Binary.hpp"
+#include <algorithm>           // for min, fill, max
+#include <iostream>            // for operator<<, basic_ostream, basic_ostre...
+#include <limits>              // for numeric_limits
+#include <numeric>             // for accumulate
+#include <string>              // for operator<<, char_traits
+#include <vector>              // for vector
 
-#include <numeric>
-#include <vector>
+#include <cstdint>             // for uint8_t, uint32_t, uint64_t, uint16_t
+#include <cstdlib>             // for rand
+#include <cstring>             // for memcpy, memmove
+#include <ctime>               // for clock, size_t, clock_t
+
+#include "CM.hpp"              // for CM
+#include "CM-inl.hpp"          // for CM::CM<kInputs, kUseSSE, HistoryType>
+#include "Compressor.hpp"      // for Store
+#include "DeltaFilter.hpp"     // for FixedDeltaFilter
+#include "Filter.hpp"          // for ByteBufferFilter, ByteStreamFilter
+#include "Stream.hpp"          // for ReadMemoryStream, Stream (ptr only)
+#include "Util.hpp"            // for computeRate, prettySize, KB, check
 
 static const uint32_t kDataSize = 654321;
 static const uint32_t kBufferSize = 4 * KB;

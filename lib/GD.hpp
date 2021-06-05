@@ -24,8 +24,12 @@
 #ifndef GD_HPP_
 #define GD_HPP_
 
-#include <sstream>
-#include <vector>
+#include <sstream>   // for ostringstream
+#include <string>    // for string
+#include <vector>    // for vector
+
+#include <cmath>     // for log2f
+#include <cstdlib>   // for size_t, abs
 
 class SquaredPredictor {
 public:

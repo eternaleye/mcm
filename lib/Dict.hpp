@@ -24,15 +24,23 @@
 #ifndef _DICT_HPP_
 #define _DICT_HPP_
 
-#include <algorithm>
-#include <map>
-#include <memory>
-#include <numeric>
-#include <unordered_map>
-#include <unordered_set>
+#include <algorithm>           // for max, min, sort, copy, count
+#include <iostream>            // for operator<<, basic_ostream, basic_ostre...
+#include <memory>              // for allocator_traits<>::value_type
+#include <string>              // for string, basic_string, hash, operator==
+#include <unordered_map>       // for unordered_map, operator!=, _Node_iterator
+#include <utility>             // for pair
+#include <vector>              // for vector, vector<>::reverse_iterator
 
-#include "Filter.hpp"
-#include "WordCounter.hpp"
+#include <cassert>             // for assert
+#include <cstdint>             // for uint8_t, uint32_t, int64_t
+#include <cstring>             // for size_t, memcpy, strcmp
+#include <ctime>               // for clock
+
+#include "Filter.hpp"          // for ByteStreamFilter
+#include "Stream.hpp"          // for ReadMemoryStream, WriteVectorStream
+#include "Util.hpp"            // for MakeLowerCase, FrequencyCounter, MakeU...
+#include "WordCounter.hpp"     // for WordCount::CompareLexicographically
 
 enum WordModifier {
   kWordNormal,

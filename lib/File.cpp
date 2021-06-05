@@ -23,6 +23,8 @@
 
 #include "File.hpp"
 
+#include <memory>  // for allocator, allocator_traits<>::value_type
+
 void FileList::read(Stream* stream) {
   resize(stream->leb128Decode());
   std::vector<size_t> lens(size());
@@ -99,6 +101,7 @@ std::string FileInfo::attrToStr(uint16_t attr) {
 
 #ifdef WIN32
 #include <Windows.h>
+
 #pragma comment(lib, "User32.lib")
 
 void FileInfo::CreateDir(const std::string& name) {
@@ -156,8 +159,8 @@ bool FileList::addDirectory(const std::string& dir, const std::string* prefix) {
 }
 
 #else
-#include <sys/stat.h>
-#include <dirent.h>
+#include <dirent.h>            // for opendir, readdir, DIR, dirent
+#include <sys/stat.h>          // for stat, mkdir, S_ISDIR
 
 static inline uint32_t stat_mode(const char *fname) {
   struct stat st;

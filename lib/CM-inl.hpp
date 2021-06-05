@@ -21,7 +21,17 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "CM.hpp"
+#include <iostream>      // for operator<<, basic_ostream, endl, basic_ostre...
+#include <string>        // for operator<<, char_traits
+#include <utility>       // for pair
+
+#include <cassert>       // for assert
+#include <cctype>        // for isspace
+#include <cstdio>        // for EOF
+#include <ctime>         // for clock, clock_t
+
+#include "StateMap.hpp"  // for NSStateMap
+#include "Stream.hpp"    // for BufferedStreamWriter, BufferedStreamReader
 
 namespace cm {
 

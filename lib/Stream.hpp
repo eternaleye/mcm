@@ -1,11 +1,17 @@
 #ifndef STREAM_HPP_
 #define STREAM_HPP_
 
-#include <algorithm>
+#include <algorithm>  // for copy, min, max
+#include <iostream>   // for operator<<, basic_ostream, endl, basic_ostream<...
+#include <string>     // for string, char_traits
+#include <vector>     // for vector
 
-#include <cstring>
+#include <cassert>    // for assert
+#include <cstdio>     // for EOF
+#include <cstdint>    // for uint8_t, uint64_t, uint32_t, uint16_t
+#include <cstring>    // for size_t, memcpy
 
-#include "Util.hpp"
+#include "Util.hpp"   // for unimplementedError, ALWAYS_INLINE, kBitsPerByte
 
 class Tellable {
 public:

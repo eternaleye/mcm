@@ -21,7 +21,9 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Compressor.hpp"
+#include "Tests.hpp"
+
+#include "Util.hpp"  // for RunUtilTests
 
 void RunAllTests() {
   RunUtilTests();

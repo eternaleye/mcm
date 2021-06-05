@@ -23,8 +23,13 @@
 
 #include "LZ.hpp"
 
-#include <cstdint>
-#include <fstream>
+#include <algorithm>     // for min, max
+#include <iostream>      // for endl, operator<<, basic_ostream<>::__ostream...
+
+#include <cstdio>        // for size_t, EOF
+#include <cstdint>       // for uint8_t, uint32_t
+
+#include "StateMap.hpp"  // for NSStateMap
 
 #ifdef WIN32
 #include <intrin.h>
@@ -39,8 +44,6 @@
 #ifdef USE_LZSSE
 #include "lzsse4.h"
 #endif
-
-#include <mmintrin.h>
 
 size_t LZ4::getMaxExpansion(size_t in_size) {
 #ifdef USE_LZ4

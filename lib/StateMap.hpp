@@ -24,9 +24,16 @@
 #ifndef _STATE_MAP_HPP_
 #define _STATE_MAP_HPP_
 
-#include <fstream>
+#include <iostream>     // for operator<<, basic_ostream::operator<<, basic_...
+#include <map>          // for operator==, _Rb_tree_iterator<>::_Self, map
+#include <memory>       // for allocator_traits<>::value_type
+#include <type_traits>  // for __strip_reference_wrapper<>::__type
+#include <utility>      // for pair, make_pair
+#include <vector>       // for vector
 
-#include "Compressor.hpp"
+#include <cassert>      // for assert
+#include <cstdint>      // for uint32_t, uint8_t
+#include <cstdlib>      // for size_t, abs
 
 // Non stationary state map.
 template <const int pshift = 12>

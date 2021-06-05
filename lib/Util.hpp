@@ -24,20 +24,22 @@
 #ifndef _UTIL_HPP_
 #define _UTIL_HPP_
 
-#include <fstream>
-#include <iostream>
-#include <mutex>
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <vector>
+#include <algorithm>    // for min
+#include <fstream>      // for operator>>
+#include <iostream>     // for operator<<, basic_ostream, endl, ostream, cerr
+#include <mutex>        // for mutex
+#include <sstream>      // for ostringstream
+#include <string>       // for string, char_traits, operator<<
+#include <utility>      // for pair
+#include <vector>       // for vector
 
-#include <cassert>
-#include <cstdint>
-#include <ctime>
+#include <cassert>      // for assert
+#include <cstdint>      // for uint32_t, uint8_t, uint64_t, int64_t
+#include <cstdlib>      // for size_t, rand
+#include <ctime>        // for clock_t
+#include <cstring>      // for memcpy, memmove
 
-#include <emmintrin.h>
-#include <mmintrin.h>
+#include <xmmintrin.h>  // for __m128, _mm_loadu_ps, _mm_storeu_ps
 
 #define OVERRIDE
 

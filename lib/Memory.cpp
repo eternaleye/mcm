@@ -21,11 +21,12 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
-#include <cstring>
-
 #include "Memory.hpp"
-#include "Util.hpp"
+
+#include <algorithm>  // for fill
+
+#include <cstdlib>    // for free, calloc, size_t
+#include <cstring>    // for memset
 
 #define USE_MALLOC 1
 

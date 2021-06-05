@@ -24,6 +24,15 @@
 #ifndef _HASHTABLE_HPP_
 #define _HASHTABLE_HPP_
 
+#include <algorithm>  // for fill
+#include <vector>     // for vector
+
+#include <cassert>    // for assert
+#include <cstddef>    // for size_t
+#include <cstdint>    // for uint32_t
+
+#include "Util.hpp"   // for hash_t, ALWAYS_INLINE
+
 // Fixed size hash table.
 template <typename Key, typename Value>
 class ChainingHashTable {

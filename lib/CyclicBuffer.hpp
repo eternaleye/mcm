@@ -25,12 +25,14 @@
 #define _SLIDING_WINDOW_HPP_
 #pragma once
 
-#include <algorithm>
-#include <memory>
+#include <algorithm>  // for min, copy_n
+#include <memory>     // for unique_ptr
 
-#include <cassert>
+#include <cassert>    // for assert
+#include <cstddef>    // for size_t
+#include <cstdint>    // for uint32_t
 
-#include "Util.hpp"
+#include "Util.hpp"   // for ALWAYS_INLINE, Endian, dcheck, kEndianLittle
 
 template <typename T>
 class CyclicBuffer {

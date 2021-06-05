@@ -24,10 +24,15 @@
 #ifndef _MIXER_HPP_
 #define _MIXER_HPP_
 
-#include <emmintrin.h>
+#include <vector>       // for vector
 
-#include "Util.hpp"
-#include "Compressor.hpp"
+#include <cassert>      // for assert
+#include <cstddef>      // for size_t
+#include <cstdint>      // for uint32_t, int64_t, uint16_t
+
+#include <emmintrin.h>  // for _mm_extract_epi16, _mm_insert_epi16, _mm_add_...
+
+#include "Util.hpp"     // for ALWAYS_INLINE, fastAbs, shuffle, shuffle<>::v...
 
 
 template <const uint32_t fp_shift = 14>

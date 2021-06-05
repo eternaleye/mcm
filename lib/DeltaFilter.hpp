@@ -24,10 +24,17 @@
 #ifndef _DELTA_FILTER_HPP_
 #define _DELTA_FILTER_HPP_
 
-#include <memory>
+#include <algorithm>   // for fill, min
+#include <memory>      // for unique_ptr
 
-#include "Filter.hpp"
-#include "Memory.hpp"
+#include <cstdint>     // for uint32_t, uint8_t
+#include <cstring>     // for size_t, memcpy
+
+#include "Filter.hpp"  // for ByteStreamFilter
+#include "Memory.hpp"  // for readBytes, writeBytes
+#include "Util.hpp"    // for KB
+
+class Stream;
 
 // Encoding format:
 // E8/E9 FF/00 XX XX XX

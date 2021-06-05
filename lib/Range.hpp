@@ -24,10 +24,10 @@
 #ifndef _RANGE_HPP_
 #define _RANGE_HPP_
 
-#include <cassert>
+#include <cassert>   // for assert
+#include <cstdint>   // for uint32_t, uint8_t, uint64_t
 
-#include "Compressor.hpp"
-#include "Model.hpp"
+#include "Util.hpp"  // for ALWAYS_INLINE
 
 // From 7zip, added single bit functions
 class Range7 {

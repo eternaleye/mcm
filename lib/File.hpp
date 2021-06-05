@@ -24,15 +24,21 @@
 #ifndef _FILE_STREAM_HPP_
 #define _FILE_STREAM_HPP_
 
-#include <fstream>
-#include <mutex>
-#include <sstream>
+#include <algorithm>   // for min, copy, max
+#include <fstream>     // for operator<<, ios_base, ostringstream, operator|
+#include <map>         // for map, operator!=, operator==, _Rb_tree_iterator...
+#include <mutex>       // for mutex, unique_lock
+#include <string>      // for string, basic_string, char_traits, operator<
+#include <utility>     // for pair
+#include <vector>      // for vector
 
-#include <cassert>
-#include <cstdio>
+#include <cassert>     // for assert
+#include <cerrno>      // for errno, EINTR
+#include <cstdint>     // for uint64_t, uint8_t, uint16_t, uint32_t, int64_t
+#include <cstdio>      // for size_t, ftello, SEEK_SET, clearerr, fclose
 
-#include "Compressor.hpp"
-#include "Stream.hpp"
+#include "Stream.hpp"  // for Stream, WriteStream
+#include "Util.hpp"    // for ALWAYS_INLINE, check, dcheck
 
 #ifndef WIN32
 #define _fseeki64 fseeko

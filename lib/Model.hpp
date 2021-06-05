@@ -24,9 +24,12 @@
 #ifndef _MODEL_HPP_
 #define _MODEL_HPP_
 
-#include <cassert>
+#include <cassert>  // for assert
+#include <cstddef>  // for size_t
+#include <cstdint>  // for uint32_t, int32_t
 
-#include "Compressor.hpp"
+#include "Util.hpp" // for ALWAYS_INLINE, _bitSize
+
 #pragma warning(disable : 4146)
 
 #pragma pack(push)

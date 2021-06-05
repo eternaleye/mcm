@@ -24,16 +24,26 @@
 #ifndef _DETECTOR_HPP_
 #define _DETECTOR_HPP_
 
-#include <fstream>
-#include <deque>
+#include <algorithm>         // for min
+#include <deque>             // for deque
+#include <iostream>          // for operator<<, basic_ostream, endl, basic_o...
+#include <memory>            // for allocator_traits<>::value_type
+#include <string>            // for operator<<, char_traits, string
+#include <utility>           // for pair
+#include <vector>            // for vector
 
-#include "CyclicBuffer.hpp"
-#include "Dict.hpp"
-#include "JPEG.hpp"
-#include "Stream.hpp"
-#include "UTF8.hpp"
-#include "Util.hpp"
-#include "Wav16.hpp"
+#include <cassert>           // for assert
+#include <cctype>            // for isdigit, isspace
+#include <cstdint>           // for uint8_t, uint64_t, uint32_t
+#include <cstdio>            // for size_t, EOF
+
+#include "CyclicBuffer.hpp"  // for CyclicDeque, Window
+#include "Dict.hpp"          // for Dict, Dict::Builder
+#include "JPEG.hpp"          // for JPEGCompressor
+#include "Stream.hpp"        // for BufferedStreamWriter, Stream
+#include "UTF8.hpp"          // for UTF8Decoder
+#include "Util.hpp"          // for formatNumber, StaticArray, OffsetBlock
+#include "Wav16.hpp"         // for Wav16
 
 // Detects blocks and data type from input data
 class Detector {

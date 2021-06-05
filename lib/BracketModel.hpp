@@ -24,10 +24,12 @@
 #ifndef _BRACKET_MODEL_HPP_
 #define _BRACKET_MODEL_HPP_
 
-#include <algorithm>
+#include <algorithm>    // for fill_n, min
 
-#include "Reorder.hpp"
-#include "UTF8.hpp"
+#include <cstddef>      // for size_t
+#include <cstdint>      // for uint8_t, uint32_t
+
+#include "Reorder.hpp"  // for ReorderMap
 
 // Keep track of last special char + o0
 class LastSpecialCharModel {

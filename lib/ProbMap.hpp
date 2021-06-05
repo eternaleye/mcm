@@ -24,6 +24,11 @@
 #ifndef PROB_MAP_HPP_
 #define PROB_MAP_HPP_
 
+#include <cstddef>  // for size_t
+#include <cstdint>  // for uint32_t, uint16_t, uint64_t, uint8_t, int16_t
+
+#include "Util.hpp"  // for ALWAYS_INLINE
+
 template <class Predictor, size_t kProbs>
 class DynamicProbMap {
 public:

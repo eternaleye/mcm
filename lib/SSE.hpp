@@ -24,8 +24,15 @@
 #ifndef _SSE_HPP_
 #define _SSE_HPP_
 
-#include "Mixer.hpp"
-#include "Model.hpp"
+#include <algorithm>  // for min
+#include <vector>     // for vector
+
+#include <cstddef>    // for size_t
+#include <cstdint>    // for uint32_t
+
+#include "Mixer.hpp"  // for Mixer, MixerArray
+#include "Model.hpp"  // for bitLearnModel, fastBitModel
+#include "Util.hpp"   // for ALWAYS_INLINE, dcheck, Clamp, check
 
 // template <size_t kProbBits, size_t kStemBits = 5, class StationaryModel = fastBitModel<int, kProbBits, 8, 30>>
 template <size_t kProbBits, size_t kStemBits = 5, class StationaryModel = bitLearnModel<kProbBits, 8, 30>>

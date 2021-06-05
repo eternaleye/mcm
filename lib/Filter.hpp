@@ -24,10 +24,14 @@
 #ifndef _FILTER_HPP_
 #define _FILTER_HPP_
 
-#include <memory>
+#include <algorithm>   // for min, copy
+#include <memory>      // for unique_ptr
 
-#include "Stream.hpp"
-#include "Util.hpp"
+#include <cstdint>     // for uint8_t, uint32_t, uint64_t
+#include <cstdio>      // for size_t, EOF
+
+#include "Stream.hpp"  // for Stream
+#include "Util.hpp"    // for KB, UNLIKELY, check, FrequencyCounter, StaticB...
 
 /*
 Filter usage:

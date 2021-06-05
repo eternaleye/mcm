@@ -24,24 +24,24 @@
 #ifndef _WAV16_HPP_
 #define _WAV16_HPP_
 
-#include <vector>
+#include <iostream>        // for operator<<, basic_ostream, basic_ostream<>...
+#include <string>          // for operator<<
+#include <vector>          // for vector
 
-#include <cstdlib>
+#include <cassert>         // for assert
+#include <cmath>           // for log2, pow
+#include <cstdint>         // for int16_t, uint32_t, uint16_t, uint64_t
+#include <cstdlib>         // for size_t, abs
+#include <ctime>           // for clock
 
-#include "DivTable.hpp"
-#include "Entropy.hpp"
-#include "GD.hpp"
-#include "Huffman.hpp"
-// #include "LD.hpp"
-#include "Log.hpp"
-#include "MatchModel.hpp"
-#include "Memory.hpp"
-#include "Mixer.hpp"
-#include "Model.hpp"
-#include "Range.hpp"
-#include "StateMap.hpp"
-#include "Util.hpp"
-#include "WordModel.hpp"
+#include "Compressor.hpp"  // for Compressor
+#include "GD.hpp"          // for LinearPredictor, LogPredictor
+#include "Model.hpp"       // for fastBitModel
+#include "Range.hpp"       // for Range7
+#include "Stream.hpp"      // for BufferedStreamWriter, BufferedStreamReader
+#include "Util.hpp"        // for MakeWord, kEndianLittle, KB, Clamp, kEndia...
+
+template <typename Buffer> class Window;
 
 class Wav16 : public Compressor {
 public:

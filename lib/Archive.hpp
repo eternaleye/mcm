@@ -24,13 +24,21 @@
 #ifndef ARCHIVE_HPP_
 #define ARCHIVE_HPP_
 
-#include <thread>
+#include <cstddef>         // for size_t
+#include <cstdint>         // for uint16_t, uint64_t, uint8_t
+#include <iosfwd>          // for ostream
+#include <memory>          // for unique_ptr
+#include <string>          // for string
+#include <vector>          // for vector
 
 #include "CM.hpp"
-#include "Compressor.hpp"
-#include "File.hpp"
-#include "Stream.hpp"
-#include "Util.hpp"
+#include "Compressor.hpp"  // for Compressor, Compressor::Type
+#include "Detector.hpp"    // for Detector, Detector::Profile, Analyzer, Ana...
+#include "File.hpp"        // for FileSegmentStream::FileSegments, FileInfo ...
+#include "Util.hpp"        // for FrequencyCounter
+
+class Filter;
+class Stream;
 
 // Force filter
 enum FilterType {

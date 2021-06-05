@@ -24,14 +24,22 @@
 #ifndef _HUFFMAN_HPP_
 #define _HUFFMAN_HPP_
 
-#include <algorithm>
-#include <set>
+#include <algorithm>          // for copy, max
+#include <iostream>           // for operator<<, endl, ostream, cout, basic_...
+#include <map>                // for map
+#include <memory>             // for operator==, operator!=, unique_ptr
+#include <set>                // for operator!=, multiset, _Rb_tree_const_it...
+#include <utility>            // for move
+#include <vector>             // for vector, vector::size_type
 
-#include <cassert>
+#include <cassert>            // for assert
+#include <cstdint>            // for uint32_t, uint16_t, uint8_t, uint64_t
+#include <cstdio>             // for size_t, EOF
 
-#include "Compressor.hpp"
-#include "ProgressMeter.hpp"
-#include "Range.hpp"
+#include "Compressor.hpp"     // for MemoryCompressor
+#include "ProgressMeter.hpp"  // for ProgressMeter
+#include "Range.hpp"          // for Range7
+#include "Util.hpp"           // for ALWAYS_INLINE, printIndexedArray, kBits...
 
 class Huffman {
 public:

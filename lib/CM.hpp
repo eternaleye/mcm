@@ -24,28 +24,31 @@
 #ifndef _CM_HPP_
 #define _CM_HPP_
 
-#include <type_traits>
-#include <vector>
+#include <algorithm>         // for max, fill_n, min
+#include <iosfwd>            // for ostream
+#include <vector>            // for vector
 
-#include <cstdlib>
+#include <cstddef>           // for size_t
+#include <cstdint>           // for uint8_t, uint32_t, uint64_t, int32_t
 
-#include "BracketModel.hpp"
-#include "Detector.hpp"
-#include "DivTable.hpp"
-#include "Entropy.hpp"
-#include "Huffman.hpp"
-#include "Log.hpp"
-#include "MatchModel.hpp"
-#include "Memory.hpp"
-#include "Mixer.hpp"
-#include "Model.hpp"
-#include "ProbMap.hpp"
-#include "Range.hpp"
-#include "Reorder.hpp"
-#include "StateMap.hpp"
-#include "Util.hpp"
-#include "WordModel.hpp"
-#include "SSE.hpp"
+#include "BracketModel.hpp"  // for BracketModel, LastSpecialCharModel
+#include "Compressor.hpp"    // for Compressor
+#include "CyclicBuffer.hpp"  // for CyclicBuffer
+#include "Detector.hpp"      // for Detector, Detector::Profile, Detector::k...
+#include "Huffman.hpp"       // for Huffman, Huffman::Code
+#include "Log.hpp"           // for ss_table
+#include "MatchModel.hpp"    // for MatchModel
+#include "Memory.hpp"        // for MemMap
+#include "Mixer.hpp"         // for Mixer, MixerArray
+#include "Model.hpp"         // for fastBitModel, safeBitModel
+#include "ProbMap.hpp"       // for FastAdaptiveProbMap
+#include "Range.hpp"         // for Range7
+#include "Reorder.hpp"       // for ReorderMap
+#include "SSE.hpp"           // for SSE
+#include "Util.hpp"          // for rst, ALWAYS_INLINE, Clamp, Prefetch, dcheck
+#include "WordModel.hpp"     // for DictXMLModel, WordModel, WordModel::kMaxLen
+
+class Stream;
 
 namespace cm {
   // Flags for which models are enabled.

@@ -23,11 +23,11 @@
 
 #include "Util.hpp"
 
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <string.h>
-#include <iomanip>
+#include <algorithm>  // for max, copy
+#include <fstream>    // for ifstream, ostringstream, basic_ostream, ios_base
+#include <iomanip>    // for operator<<, setfill, setw
+
+#include <cstring>    // for strerror
 
 bool fileExists(const char* name) {
   std::ifstream fin(name, std::ios_base::in);

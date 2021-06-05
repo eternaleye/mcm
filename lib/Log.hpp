@@ -24,7 +24,11 @@
 #ifndef _LOG_HPP_
 #define _LOG_HPP_
 
-#include <cmath>
+#include <cmath>     // for exp, log
+#include <cstddef>   // for size_t
+#include <cstdint>   // for uint32_t
+
+#include "Util.hpp"  // for ALWAYS_INLINE, Clamp, dcheck
 
 // squash = ln(p/(1-p))
 // stretch = squash^-1 = 1/(1+e^-x)

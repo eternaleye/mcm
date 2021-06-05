@@ -24,7 +24,9 @@
 #ifndef _UTF_8_HPP_
 #define _UTF_8_HPP_
 
-#include "Util.hpp"
+#include <cstdint>   // for uint32_t
+
+#include "Util.hpp"  // for ALWAYS_INLINE
 
 template <bool error_check = false>
 class UTF8Decoder {

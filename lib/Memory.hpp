@@ -24,7 +24,8 @@
 #ifndef _MEMORY_HPP_
 #define _MEMORY_HPP_
 
-#include "Util.hpp"
+#include <cstddef>  // for size_t
+#include <cstdint>  // for uint8_t
 
 class MemMap {
   void* storage;

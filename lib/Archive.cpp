@@ -23,12 +23,29 @@
 
 #include "Archive.hpp"
 
-#include <algorithm>
-#include <cstring>
+#include <algorithm>           // for max, copy, sort, min, remove_if
+#include <iostream>            // for operator<<, basic_ostream, endl, basic...
+#include <limits>              // for numeric_limits
+#include <list>                // for list
+#include <mutex>               // for mutex, unique_lock
+#include <set>                 // for multiset
+#include <utility>             // for pair, move
 
-#include "CM-inl.hpp"
-#include "X86Binary.hpp"
-#include "Wav16.hpp"
+#include <cctype>              // for isdigit
+#include <cstdint>             // for uint64_t, uint32_t, uint8_t
+#include <cstring>             // for size_t, memcmp, memcpy
+#include <ctime>               // for clock, CLOCKS_PER_SEC
+
+#include "CM.hpp"              // for CM
+#include "CM-inl.hpp"          // for CM::CM<kInputs, kUseSSE, HistoryType>
+#include "Dict.hpp"            // for Dict::CodeWordSet, Dict::Filter, Dict
+#include "Filter.hpp"          // for Filter
+#include "Huffman.hpp"         // for Huffman::Code, Huffman, Huffman::Tree
+#include "ProgressMeter.hpp"   // for ProgressThread, AutoUpdater
+#include "Stream.hpp"          // for Stream, ReadMemoryStream, VerifyStream
+#include "Wav16.hpp"           // for Wav16
+#include "WordCounter.hpp"     // for WordCount
+#include "X86Binary.hpp"       // for X86AdvancedFilter
 
 static const bool kTestFilter = false;
 static const size_t kSizePad = 10;

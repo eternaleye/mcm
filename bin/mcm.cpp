@@ -21,28 +21,30 @@
     along with MCM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <thread>
+#include <algorithm>        // for copy_n, max, min, copy
+#include <iomanip>          // for operator<<, setprecision
+#include <iostream>         // for operator<<, basic_ostream, endl, basic_os...
+#include <limits>           // for numeric_limits
+#include <numeric>          // for accumulate
+#include <string>           // for operator==, operator<<, string, char_traits
+#include <vector>           // for vector
 
-#include <ctime>
-#include <cstdio>
-#include <cstring>
+#include <cassert>          // for assert
+#include <cstdint>          // for uint64_t, uint32_t, uint8_t
+#include <cstdlib>          // for rand, srand, size_t
+#include <cstring>          // for size_t, memset
+#include <ctime>            // for clock, clock_t
 
-#include "Archive.hpp"
-#include "CM.hpp"
-#include "DeltaFilter.hpp"
-#include "Dict.hpp"
-#include "File.hpp"
-#include "Huffman.hpp"
-#include "LZ-inl.hpp"
-#include "ProgressMeter.hpp"
-#include "Tests.hpp"
-#include "TurboCM.hpp"
-#include "X86Binary.hpp"
+#include "Archive.hpp"      // for CompressionOptions, Archive, Archive::Header
+#include "File.hpp"         // for FileInfo, File
+#include "LZ.hpp"           // for LZ16, SimpleEncoder
+#include "LZ-inl.hpp"       // for LZ16::compress, LZ16::decompress
+#include "MatchFinder.hpp"  // for FastMatchFinder, MemoryMatchFinder
+#include "Stream.hpp"       // for VoidWriteStream
+#include "Tests.hpp"        // for RunAllTests
+#include "Util.hpp"         // for trimDir, formatNumber, clockToSeconds
+
+class Compressor;
 
 static constexpr bool kReleaseBuild = false;
 

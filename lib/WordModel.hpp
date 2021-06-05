@@ -24,8 +24,12 @@
 #ifndef _WORD_MODEL_HPP_
 #define _WORD_MODEL_HPP_
 
-#include "Reorder.hpp"
-#include "UTF8.hpp"
+#include <cstddef>      // for size_t
+#include <cstdint>      // for uint32_t, uint8_t, uint64_t
+
+#include "Reorder.hpp"  // for ReorderMap
+#include "UTF8.hpp"     // for UTF8Decoder
+#include "Util.hpp"     // for ALWAYS_INLINE, MakeLowerCase, rotate_left
 
 class WordModel {
 public:

@@ -23,7 +23,10 @@
 
 #include "Compressor.hpp"
 
-#include <memory>
+#include <algorithm>  // for min
+#include <memory>     // for unique_ptr
+
+#include <cstdint>    // for uint8_t, uint64_t
 
 size_t MemCopyCompressor::getMaxExpansion(size_t in_size) {
   return in_size;

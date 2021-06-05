@@ -1,7 +1,16 @@
 #ifndef _MATCH_MODEL_HPP_
 #define _MATCH_MODEL_HPP_
 
-#include "Memory.hpp"
+#include <algorithm>         // for min
+#include <vector>            // for vector
+
+#include <cassert>           // for assert
+#include <cstddef>           // for size_t
+#include <cstdint>           // for uint32_t, uint8_t
+
+#include "CyclicBuffer.hpp"  // for CyclicBuffer
+#include "Memory.hpp"        // for MemMap
+#include "Util.hpp"          // for ALWAYS_INLINE, AlignUp, Prefetch, isPowe...
 
 template <typename Model>
 class MatchModel {

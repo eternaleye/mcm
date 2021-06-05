@@ -24,9 +24,11 @@
 #ifndef _REORDER_HPP_
 #define _REORDER_HPP_
 
-#include <algorithm>
+#include <algorithm>  // for copy_n
 
-#include "Util.hpp"
+#include <cstddef>    // for size_t
+
+#include "Util.hpp"   // for check
 
 template <typename Type, size_t kCount>
 class ReorderMap {
