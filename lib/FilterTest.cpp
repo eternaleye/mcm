@@ -25,11 +25,11 @@
 #include <iostream>            // for operator<<, basic_ostream, basic_ostre...
 #include <limits>              // for numeric_limits
 #include <numeric>             // for accumulate
+#include <random>              // for random_device, uniform_int_distributio...
 #include <string>              // for operator<<, char_traits
 #include <vector>              // for vector
 
 #include <cstdint>             // for uint8_t, uint32_t, uint64_t, uint16_t
-#include <cstdlib>             // for rand
 #include <cstring>             // for memcpy, memmove
 #include <ctime>               // for clock, size_t, clock_t
 
@@ -242,9 +242,12 @@ template<class FilterType>
 void testFilter() {
   Store store_comp;
   std::vector<uint8_t> data;
-  uint32_t size = (rand() * 7654321 + rand()) % kDataSize;
+  std::random_device randomness;
+  std::uniform_int_distribution<uint32_t> test_sizes{1000000, kDataSize - 1};
+  std::uniform_int_distribution<uint8_t> test_payload{};
+  uint32_t size = test_sizes(randomness);
   for (uint32_t i = 0; i < size; ++i) {
-    data.push_back(rand() % 256);
+    data.push_back(test_payload(randomness));
   }
   std::vector<uint8_t> out_data;
   auto data_stream = ReadMemoryStream(&data);
@@ -269,7 +272,6 @@ void testFilter() {
 template<class FilterType>
 void benchFilter(const std::vector<uint8_t>& data) {
   cm::CM<8, false> comp(FrequencyCounter<256>(), 6);
-  // data = randomArray(kBenchDataSize);
   check(!data.empty());
   const uint64_t expected_sum = std::accumulate(data.begin(), data.end(), 0UL);
   std::vector<uint8_t> out_data;

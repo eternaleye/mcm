@@ -26,12 +26,13 @@
 #include <iostream>         // for operator<<, basic_ostream, endl, basic_os...
 #include <limits>           // for numeric_limits
 #include <numeric>          // for accumulate
+#include <random>           // for random_device, uniform_int_distribution
 #include <string>           // for operator==, operator<<, string, char_traits
 #include <vector>           // for vector
 
 #include <cassert>          // for assert
+#include <cstddef>          // for size_t
 #include <cstdint>          // for uint64_t, uint32_t, uint8_t
-#include <cstdlib>          // for rand, srand, size_t
 #include <cstring>          // for size_t, memset
 #include <ctime>            // for clock, clock_t
 
@@ -394,7 +395,6 @@ int main(int argc, char* argv[]) {
         std::copy(temp.begin(), temp.end(), &opts[0]);
       }
       size_t best_opts[kOpts] = {};
-      srand(clock() + 291231);
       size_t cur_index = 0;
       size_t len = 1;
       // size_t kMaxIndex = 128 - len;
@@ -407,6 +407,8 @@ int main(int argc, char* argv[]) {
       size_t count[kAvgCount] = {};
       double min_time = std::numeric_limits<double>::max();
       const bool kPerm = false;
+      std::random_device randomness;
+      std::uniform_int_distribution<size_t> index_increments{1, kMaxIndex};
       if (kPerm) {
         for (size_t i = 0;; ++i) {
           if ((i & 255) == 255 && false) {
@@ -414,7 +416,7 @@ int main(int argc, char* argv[]) {
             kMaxIndex = 128 - len;
           }
           auto a = i % kMaxIndex;
-          auto b = (i + 1 + std::rand() % (kMaxIndex - 1)) % kMaxIndex;
+          auto b = (i + index_increments(randomness)) % kMaxIndex;
           VoidWriteStream fout;
           Archive archive(&fout, options.options_);
           if (i != 0) {

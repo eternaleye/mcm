@@ -65,14 +65,6 @@ std::string errstr(int err) {
   return strerror(err);
 }
 
-std::vector<uint8_t> randomArray(uint32_t size) {
-  std::vector<uint8_t> ret;
-  for (uint32_t i = 0; i < size; ++i) {
-    ret.push_back(rand() % 256);
-  }
-  return ret;
-}
-
 uint64_t computeRate(uint64_t size, uint64_t delta_time) {
   if (delta_time == 0) {
     return 0;

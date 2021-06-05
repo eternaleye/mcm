@@ -35,7 +35,6 @@
 
 #include <cassert>      // for assert
 #include <cstdint>      // for uint32_t, uint8_t, uint64_t, int64_t
-#include <cstdlib>      // for size_t, rand
 #include <ctime>        // for clock_t
 #include <cstring>      // for memcpy, memmove
 
@@ -179,10 +178,6 @@ inline void unimplementedError(const char* function) {
   std::ostringstream oss;
   oss << "Calling implemented function " << function;
   fatalError(oss.str());
-}
-
-inline uint32_t rand32() {
-  return rand() ^ (rand() << 16);
 }
 
 ALWAYS_INLINE int fastAbs(int n) {
@@ -401,7 +396,6 @@ std::string prettySize(uint64_t size);
 std::string formatNumber(uint64_t n);
 double clockToSeconds(clock_t c);
 std::string errstr(int err);
-std::vector<uint8_t> randomArray(size_t size);
 uint64_t computeRate(uint64_t size, uint64_t delta_time);
 std::vector<uint8_t> loadFile(const std::string& name, uint32_t max_size = 0xFFFFFFF);
 std::string trimExt(const std::string& str);
