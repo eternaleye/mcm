@@ -46,12 +46,6 @@ static const bool kIsDebugBuild = true;
 static const bool kIsDebugBuild = false;
 #endif
 
-#ifdef _MSC_VER
-#define ASSUME(x) __assume(x)
-#else
-#define ASSUME(x) __builtin_assume(x)
-#endif
-
 typedef uint32_t hash_t;
 
 static const uint64_t KB = 1024;
@@ -130,14 +124,9 @@ static inline int Clamp(int a, int min, int max) {
   return a;
 }
 
-// Used by RoundUp
-static inline const size_t RoundDown(size_t n, size_t r) {
-  return n - n % r;
-}
-
 // Used by LZ.hpp, WordCounter.hpp
 static inline const size_t RoundUp(size_t n, size_t r) {
-  return RoundDown(n + r - 1, r);
+  return (n + r - 1) - (n + r - 1) % r;
 }
 
 // Used by Tests.cpp
