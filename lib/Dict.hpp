@@ -538,7 +538,7 @@ public:
       word3bstart = word2bstart + num2;
       // Encode words.
       std::vector<WordCount> words;
-      while (rms.tell() != dict_buffer_.size()) {
+      while (rms.tellg() != dict_buffer_.size()) {
         WordCount wc(rms.readString());
         words.push_back(wc);
       }

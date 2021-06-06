@@ -321,19 +321,19 @@ void Archive::writeBlocks() {
   WriteVectorStream wvs(&temp);
   // Write out the blocks into temp.
   blocks_.write(&wvs);
-  size_t blocks_size = wvs.tell();
+  size_t blocks_size = wvs.tellp();
   files_.write(&wvs);
-  size_t files_size = wvs.tell() - blocks_size;
+  size_t files_size = wvs.tellp() - blocks_size;
   // Compress overhead.
   std::unique_ptr<Compressor> c(createMetaDataCompressor());
   c->setOpt(opt_var_);
   c->setOpts(opt_vars_);
   ReadMemoryStream rms(&temp[0], &temp[0] + temp.size());
-  auto start_pos = stream_->tell();
+  auto start_pos = stream_->tellp();
   stream_->leb128Encode(temp.size());
   c->compress(&rms, stream_);
   stream_->leb128Encode(static_cast<uint64_t>(1234u));
-  std::cout << "(flist=" << files_size << "+" << "blocks=" << blocks_size << ")=" << temp.size() << " -> " << stream_->tell() - start_pos << std::endl << std::endl;
+  std::cout << "(flist=" << files_size << "+" << "blocks=" << blocks_size << ")=" << temp.size() << " -> " << stream_->tellp() - start_pos << std::endl << std::endl;
 }
 
 void Archive::readBlocks() {
@@ -347,7 +347,7 @@ void Archive::readBlocks() {
   std::unique_ptr<Compressor> c(createMetaDataCompressor());
   std::vector<uint8_t> metadata;
   WriteVectorStream wvs(&metadata);
-  auto start_pos = stream_->tell();
+  auto start_pos = stream_->tellg();
   c->decompress(stream_, &wvs, metadata_size);
   auto cmp = stream_->leb128Decode();
   check(cmp == 1234u);
@@ -490,7 +490,7 @@ private:
 
 void testFilter(Stream* stream, Analyzer* analyzer) {
   std::vector<uint8_t> comp;
-  stream->seek(0);
+  stream->seekg(0);
   auto start = std::chrono::high_resolution_clock::now();
   {
     auto& builder = analyzer->getDictBuilder();
@@ -503,13 +503,13 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
     Store store;
     store.compress(dict_filter, &wvs, std::numeric_limits<uint64_t>::max());
   }
-  uint64_t size = stream->tell();
+  uint64_t size = stream->tellg();
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
   std::cout << "Filter comp " << size << " -> " << comp.size() << " in " << time.count() << "s" << std::endl;
   // Test revser speed
   start = std::chrono::high_resolution_clock::now();
-  stream->seek(0);
+  stream->seekg(0);
   VoidWriteStream voids;
   {
     ReadMemoryStream rms(&comp);
@@ -520,10 +520,10 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
   }
   end = std::chrono::high_resolution_clock::now();
   time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
-  std::cout << "Void decomp " << voids.tell() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl;
+  std::cout << "Void decomp " << voids.tellp() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl;
   // Test reverse.
   start = std::chrono::high_resolution_clock::now();
-  stream->seek(0);
+  stream->seekg(0);
   VerifyStream vs(stream, size);
   {
     ReadMemoryStream rms(&comp);
@@ -535,7 +535,7 @@ void testFilter(Stream* stream, Analyzer* analyzer) {
   }
   end = std::chrono::high_resolution_clock::now();
   time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
-  std::cout << "Verify decomp " << vs.tell() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl << std::endl;
+  std::cout << "Verify decomp " << vs.tellp() << " <- " << comp.size() << " in " << time.count() << "s" << std::endl << std::endl;
 }
 
 static inline std::string smartExt(const std::string& ext) {
@@ -614,7 +614,7 @@ public:
       time_delta = std::chrono::high_resolution_clock::duration::min();
     }
     const std::chrono::duration<double, std::ratio<1>> delta_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(time_delta);
-    const uint64_t cur_bytes = (stream_ != nullptr ? stream_->tell() : 0u) + add_bytes_;
+    const uint64_t cur_bytes = (stream_ != nullptr ? stream_->tellg() : 0u) + add_bytes_;
     const uint32_t rate = uint32_t(double(cur_bytes / KB) / delta_secs.count());
     std::cout << "Analyzed " << add_files_ << " size=" << prettySize(cur_bytes) << " " << rate << "KB/s   ";
     std::cout << "\t\r" << std::flush;
@@ -647,7 +647,7 @@ public:
     uint64_t compare_pos = pos;
     Stream* file_stream;
     File file;
-    auto orig_pos = stream->tell();
+    auto orig_pos = stream->tellg();
     uint64_t max_read = std::numeric_limits<uint64_t>::max();
     if (e->file_idx_ == file_idx) {
       if (file_pos >= compare_pos) {
@@ -700,7 +700,7 @@ public:
       len += cur_len;
     }
     // Back to where we started.
-    stream->seek(orig_pos);
+    stream->seekg(orig_pos);
     file.close();
     if (len < 1024) {
       return std::pair<uint64_t, uint64_t>(0u, 0u);
@@ -836,9 +836,9 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
   writeBlocks();
   uint64_t total = 0;
   for (const auto& block : blocks_) {
-    auto start_pos = stream_->tell();
+    auto start_pos = stream_->tellp();
     const auto start = std::chrono::high_resolution_clock::now();
-    auto out_start = stream_->tell();
+    auto out_start = stream_->tellp();
     for (size_t i = 0; i < kSizePad; ++i) stream_->put(0);
     FileSegmentStreamFileList segstream(&block->segments_, 0, &files_, false, false);
     Algorithm* algo = &block->algorithm_;
@@ -851,7 +851,7 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
       in_stream = filter.get();
       freq = filter->GetFrequencies();
     }
-    auto in_start = in_stream->tell();
+    auto in_start = in_stream->tellg();
     std::unique_ptr<Compressor> comp(algo->CreateCompressor(freq));
     if (!comp->setOpt(opt_var_)) return 0;
     if (!comp->setOpts(opt_vars_)) return 0;
@@ -859,21 +859,21 @@ uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {
       ProgressThread thr(&segstream, stream_, true, out_start);
       comp->compress(in_stream, stream_);
     }
-    auto after_pos = stream_->tell();
+    auto after_pos = stream_->tellp();
 
     // Fix up the size.
-    stream_->seek(out_start);
-    const auto filter_size = in_stream->tell() - in_start;
+    stream_->seekp(out_start);
+    const auto filter_size = in_stream->tellg() - in_start;
     stream_->leb128Encode(filter_size);
-    stream_->seek(after_pos);
+    stream_->seekp(after_pos);
 
     // Dump some info.
     const auto end = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
     std::cout << std::endl;
-    std::cout << "Compressed " << formatNumber(segstream.tell()) << " -> " << formatNumber(after_pos - out_start)
+    std::cout << "Compressed " << formatNumber(segstream.tellg()) << " -> " << formatNumber(after_pos - out_start)
       << " in " << time.count() << "s" << std::endl << std::endl;
-    check(segstream.tell() == block->total_size_);
+    check(segstream.tellg() == block->total_size_);
     total += block->total_size_;
   }
   files_.clear();
@@ -902,15 +902,15 @@ void Archive::decompress(const std::string& out_dir, bool verify) {
   uint64_t differences = 0;
   for (const auto& block : blocks_) {
     block->total_size_ = 0;
-    auto start_pos = stream_->tell();
+    auto start_pos = stream_->tellg();
     for (auto& seg : block->segments_) {
       block->total_size_ += seg.total_size_;
     }
 
     // Read size.
-    auto out_start = stream_->tell();
+    auto out_start = stream_->tellg();
     auto block_size = stream_->leb128Decode();
-    while (stream_->tell() < out_start + kSizePad) {
+    while (stream_->tellg() < out_start + kSizePad) {
       stream_->get();
     }
 
@@ -940,7 +940,7 @@ void Archive::decompress(const std::string& out_dir, bool verify) {
     differences += verify_segstream.totalDifferences();
     const auto end = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
-    std::cout << std::endl << "Decompressed " << formatNumber(out_stream->tell()) << " <- " << formatNumber(stream_->tell() - out_start)
+    std::cout << std::endl << "Decompressed " << formatNumber(out_stream->tellp()) << " <- " << formatNumber(stream_->tellp() - out_start)
       << " in " << time.count() << "s" << std::endl << std::endl;
   }
   if (verify) {

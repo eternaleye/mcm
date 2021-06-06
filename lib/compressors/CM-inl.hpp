@@ -552,7 +552,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in_stream, Str
   size_t remain = sin.remain();
   if (remain > 0) {
     // Go back all the characters we didn't actually read.
-    in_stream->seek(in_stream->tell() - remain);
+    in_stream->seekg(in_stream->tellg() - remain);
   }
 }
 

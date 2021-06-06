@@ -37,10 +37,10 @@ public:
   virtual void put(int) {
     ++pos_;
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellp() const {
     return pos_;
   }
-  virtual void seek(uint64_t pos) {
+  virtual void seekp(uint64_t pos) {
     pos_ = pos;
   }
 };
@@ -76,7 +76,7 @@ public:
     pos_ += read_count;
     return read_count;
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellg() const {
     return pos_ - buffer_;
   }
 
@@ -97,7 +97,7 @@ public:
     std::copy(data, data + count, pos_);
     pos_ += count;
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellp() const {
     return pos_ - buffer_;
   }
 
@@ -116,7 +116,7 @@ public:
   virtual void write(const uint8_t* data, uint32_t count) {
     buffer_->insert(buffer_->end(), data, data + count);
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellp() const {
     return buffer_->size();
   }
 
@@ -166,8 +166,8 @@ public:
   void put(int c) {
     throw libmcm::unimplemented_error(__FUNCTION__);
   }
-  uint64_t tell() const {
-    return stream->tell() + buffer_pos;
+  uint64_t tellg() const {
+    return stream->tellg() + buffer_pos;
   }
 private:
   bool Refill() {
@@ -209,8 +209,8 @@ public:
   int get() {
     throw libmcm::unimplemented_error(__FUNCTION__);
   }
-  uint64_t tell() const {
-    return stream_->tell() + (ptr_ - buffer_);
+  uint64_t tellp() const {
+    return stream_->tellp() + (ptr_ - buffer_);
   }
 
 private:
@@ -312,8 +312,8 @@ public:
     }
     ++count_;
   }
-  void seek(uint64_t pos) {
-    stream_->seek(pos);
+  void seekp(uint64_t pos) {
+    stream_->seekg(pos);
   }
   void write(const uint8_t* buf, size_t n) {
     uint8_t buffer[4 * KB];
@@ -332,12 +332,12 @@ public:
   }
   void difference(int ref, int c) {
     if (differences_ == 0) {
-      std::cerr << "Difference found at byte! " << stream_->tell() << " b1: " << "ref: "
+      std::cerr << "Difference found at byte! " << stream_->tellg() << " b1: " << "ref: "
         << static_cast<int>(ref) << " new: " << static_cast<int>(c) << std::endl;
     }
     ++differences_;
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellp() const {
     return count_;
   }
   void summary() {

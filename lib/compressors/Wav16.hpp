@@ -336,7 +336,7 @@ public:
   virtual void decompress(Stream* in_stream, Stream* out_stream, uint64_t max_count) {
     BufferedStreamReader<4 * KB> sin(in_stream);
     BufferedStreamWriter<4 * KB> sout(out_stream);
-    auto start = in_stream->tell();
+    auto start = in_stream->tellg();
     init();
     ent.initDecoder(sin);
     uint16_t last_a = 0, last_b = 0;
@@ -362,8 +362,8 @@ public:
     size_t remain = sin.remain();
     if (remain > 0) {
       // Go back all the characters we didn't actually read.
-      auto target = in_stream->tell() - remain;
-      in_stream->seek(target);
+      auto target = in_stream->tellg() - remain;
+      in_stream->seekg(target);
     }
   }
 };

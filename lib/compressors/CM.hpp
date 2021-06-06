@@ -889,6 +889,10 @@ namespace cm {
       return slot;
     }
 
+    // TODO: Properly handle read vs. write, instead of using SFINAE
+    template<typename TStream> typename std::enable_if<std::is_same<TStream, BufferedStreamReader<4096>>::value, size_t>::type polytell(TStream& stream) { return stream.tellg(); }
+    template<typename TStream> typename std::enable_if<std::is_same<TStream, BufferedStreamWriter<4096>>::value, size_t>::type polytell(TStream& stream) { return stream.tellp(); }
+
     template <const bool decode, typename TStream>
     size_t processByte(TStream& stream, uint32_t c = 0) {
       size_t base_contexts[kInputs] = {};
@@ -1011,7 +1015,7 @@ namespace cm {
       dcheck(ctx_ptr - base_contexts <= kInputs + 1);
       sse_ctx_ = 0;
 
-      uint64_t cur_pos = kStatistics ? stream.tell() : 0;
+      uint64_t cur_pos = kStatistics ? polytell(stream) : 0;
 
       CalcMixerBase();
       if (mm_len > 0) {
@@ -1028,7 +1032,7 @@ namespace cm {
           bit = ProcessBits<decode, kBitTypeLZP, 1u>(stream, bit, base_contexts, expected_char ^ 256);
           // CalcMixerBase(false);
           if (kStatistics) {
-            const uint64_t after_pos = kStatistics ? stream.tell() : 0;
+            const uint64_t after_pos = kStatistics ? polytell(stream) : 0;
             (bit ? lzp_bit_match_bytes_ : lzp_bit_miss_bytes_) += after_pos - cur_pos;
             cur_pos = after_pos;
             ++(bit ? match_hits_ : match_miss_)[mm_len + cur_profile_.MatchModelOrder() - 4];
@@ -1050,7 +1054,7 @@ namespace cm {
 				c = n;
       }
       if (kStatistics) {
-        (sse_ctx_ != 0 ? lzp_miss_bytes_ : normal_bytes_) += stream.tell() - cur_pos;
+        (sse_ctx_ != 0 ? lzp_miss_bytes_ : normal_bytes_) += polytell(stream) - cur_pos;
       }
 
       return c;

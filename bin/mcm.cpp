@@ -463,7 +463,7 @@ int main(int argc, char* argv[]) {
           }
           uint64_t in_bytes = archive.compress(options.files);
           if (in_bytes == 0) continue;
-          const auto size = fout.tell();
+          const auto size = fout.tellp();
           std::cout << i << ": swap " << a << " to " << b << " " << size << std::endl;
           if (size < best_size) {
             std::cout << "IMPROVEMENT " << i << ": " << size << std::endl;
@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
           const auto time = std::chrono::high_resolution_clock::now() - start;
           total[i % kAvgCount] += time;
           min_time = std::min(min_time, time);
-          const auto size = fout.tell();
+          const auto size = fout.tellp();
           opt_file << "opts ";
           for (auto opt : opts) opt_file << opt << ",";
           ++count[i % kAvgCount];
@@ -540,9 +540,9 @@ int main(int argc, char* argv[]) {
       Archive archive(&fout, options.options_);
       uint64_t in_bytes = archive.compress(options.files);
       const std::chrono::duration<double, std::ratio<1>> time =  std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::high_resolution_clock::now() - start);
-      std::cout << "Done compressing " << formatNumber(in_bytes) << " -> " << formatNumber(fout.tell())
+      std::cout << "Done compressing " << formatNumber(in_bytes) << " -> " << formatNumber(fout.tellp())
         << " in " << std::setprecision(3) << time.count() << "s"
-        << " bpc=" << double(fout.tell()) * 8.0 / double(in_bytes) << std::endl;
+        << " bpc=" << double(fout.tellp()) * 8.0 / double(in_bytes) << std::endl;
 
       fout.close();
 

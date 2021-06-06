@@ -123,7 +123,7 @@ public:
     WriteMemoryStream wms(out);
     ReadMemoryStream rms(in, in + count);
     compressor.compress(rms, wms);
-    return wms.tell();
+    return wms.tellp();
   }
 
   virtual void decompressBytes(uint8_t* in, uint8_t* out, size_t count) {

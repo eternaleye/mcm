@@ -219,11 +219,18 @@ public:
     return fgetc(handle);
   }
 
-  uint64_t tell() const {
+  uint64_t tellg() const {
+    return offset;
+  }
+  uint64_t tellp() const {
     return offset;
   }
 
-  void seek(uint64_t pos) {
+  void seekg(uint64_t pos) {
+    auto res = seek(static_cast<uint64_t>(pos), SEEK_SET);
+    dcheck(res == 0);
+  }
+  void seekp(uint64_t pos) {
     auto res = seek(static_cast<uint64_t>(pos), SEEK_SET);
     dcheck(res == 0);
   }
@@ -252,7 +259,7 @@ public:
   // TODO: fread already acquires a lock.
   inline size_t readat(uint64_t pos, uint8_t* buffer, size_t bytes) {
     std::unique_lock<std::mutex> mu(lock);
-    seek(pos);
+    seekg(pos);
     return read(buffer, bytes);
   }
 
@@ -260,28 +267,28 @@ public:
   // TODO: fwrite already acquires a lock.
   inline void writeat(uint64_t pos, const uint8_t* buffer, size_t bytes) {
     std::unique_lock<std::mutex> mu(lock);
-    seek(pos);
+    seekp(pos);
     write(buffer, bytes);
   }
 
   // Atomic get (slow).
   inline int aget(uint64_t pos) {
     std::unique_lock<std::mutex> mu(lock);
-    seek(pos);
+    seekg(pos);
     return get();
   }
 
   // Atomic write (slow).
   inline void aput(uint64_t pos, uint8_t c) {
     std::unique_lock<std::mutex> mu(lock);
-    seek(pos);
+    seekp(pos);
     put(c);
   }
 
   inline uint64_t length() {
     std::unique_lock<std::mutex> mu(lock);
     seek(0, SEEK_END);
-    uint64_t length = tell();
+    uint64_t length = tellg();
     seek(0, SEEK_SET);
     return length;
   }
@@ -401,7 +408,10 @@ public:
   virtual size_t read(uint8_t* buf, size_t n) {
     return process<false>(buf, n);
   }
-  virtual uint64_t tell() const {
+  virtual uint64_t tellg() const {
+    return count_;
+  }
+  virtual uint64_t tellp() const {
     return count_;
   }
 

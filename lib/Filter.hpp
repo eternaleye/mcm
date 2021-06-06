@@ -194,7 +194,10 @@ public:
   }
   virtual void forwardFilter(uint8_t* out, size_t* out_count, uint8_t* in, size_t* in_count) = 0;
   virtual void reverseFilter(uint8_t* out, size_t* out_count, uint8_t* in, size_t* in_count) = 0;
-  uint64_t tell() const {
+  uint64_t tellg() const {
+    return count_;
+  }
+  uint64_t tellp() const {
     return count_;
   }
 

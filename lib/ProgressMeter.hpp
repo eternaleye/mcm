@@ -125,7 +125,7 @@ public:
     update_count_ += ret;
     if (update_count_ > kUpdateInterval) {
       update_count_ -= kUpdateInterval;
-      meter_.printRatio(out_stream_->tell(), in_stream_->tell(), "");
+      meter_.printRatio(out_stream_->tellp(), in_stream_->tellg(), "");
     }
     return ret;
   }
@@ -141,18 +141,24 @@ public:
     update_count_ += delta;
     if (update_count_ > kUpdateInterval) {
       update_count_ -= kUpdateInterval;
-      size_t comp_size = out_stream_->tell(), other_size = in_stream_->tell();
+      size_t comp_size = out_stream_->tellp(), other_size = in_stream_->tellg();
       if (!meter_.isEncode()) {
         std::swap(comp_size, other_size);
       }
       meter_.printRatio(comp_size, other_size, "");
     }
   }
-  virtual uint64_t tell() const {
-    return meter_.isEncode() ? in_stream_->tell() : out_stream_->tell();
+  virtual uint64_t tellg() const {
+    return meter_.isEncode() ? in_stream_->tellg() : out_stream_->tellp();
   }
-  virtual void seek(uint64_t pos) {
-    (meter_.isEncode() ? in_stream_ : out_stream_)->seek(pos);
+  virtual uint64_t tellp() const {
+    return meter_.isEncode() ? in_stream_->tellg() : out_stream_->tellp();
+  }
+  virtual void seekg(uint64_t pos) {
+    meter_.isEncode() ? in_stream_->seekg(pos) : out_stream_->seekp(pos);
+  }
+  virtual void seekp(uint64_t pos) {
+    meter_.isEncode() ? in_stream_->seekg(pos) : out_stream_->seekp(pos);
   }
 
 private:
@@ -221,8 +227,8 @@ public:
     done();
   }
   virtual void print() {
-    auto out_c = out_stream_->tell() - sub_out_;
-    auto in_c = in_stream_->tell();
+    auto out_c = out_stream_->tellp() - sub_out_;
+    auto in_c = in_stream_->tellg();
     if (in_c != 0 && out_c != 0) {
       meter_.printRatio(out_c, in_c, "");
     }

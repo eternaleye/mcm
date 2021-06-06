@@ -6,11 +6,10 @@
 // TODO: Drop in favor of std::basic_streambuf
 class Stream {
     public:
-        virtual uint64_t tell() const {
+        virtual uint64_t tellg() const {
             throw libmcm::unimplemented_error(__FUNCTION__);
         }
         virtual int get() = 0;
-        virtual void put(int c) = 0;
         virtual size_t read(uint8_t* buf, size_t n) {
             size_t count;
             for (count = 0; count < n; ++count) {
@@ -24,19 +23,27 @@ class Stream {
         }
         // Not thread safe by default.
         virtual size_t readat(uint64_t pos, uint8_t* buf, size_t n) {
-            seek(pos);
+            seekg(pos);
             return read(buf, n);
         }
+
+        virtual uint64_t tellp() const {
+            throw libmcm::unimplemented_error(__FUNCTION__);
+        }
+        virtual void put(int c) = 0;
         virtual void write(const uint8_t* buf, size_t n) {
             for (;n; --n) {
                 put(*(buf++));
             }
         }
         virtual void writeat(uint64_t pos, const uint8_t* buf, size_t n) {
-            seek(pos);
+            seekp(pos);
             write(buf, n);
         }
-        virtual void seek(uint64_t pos) {
+        virtual void seekg(uint64_t pos) {
+            throw libmcm::unimplemented_error(__FUNCTION__);
+        }
+        virtual void seekp(uint64_t pos) {
             throw libmcm::unimplemented_error(__FUNCTION__);
         }
         virtual ~Stream() {
