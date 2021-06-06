@@ -135,20 +135,20 @@ public:
 template <const uint32_t buffer_size>
 class BufferedStreamReader {
 public:
-  Stream* stream;
+  InStream* stream;
   size_t buffer_count, buffer_pos;
   uint8_t buffer[buffer_size];
   bool done_;
 
   bool done() const { return done_; }
 
-  BufferedStreamReader(Stream* stream) {
+  BufferedStreamReader(InStream* stream) {
     assert(stream != nullptr);
     init(stream);
   }
   virtual ~BufferedStreamReader() {
   }
-  void init(Stream* new_stream) {
+  void init(InStream* new_stream) {
     stream = new_stream;
     buffer_pos = 0;
     buffer_count = 0;
@@ -185,7 +185,7 @@ private:
 template <const uint32_t kBufferSize>
 class BufferedStreamWriter {
 public:
-  BufferedStreamWriter(Stream* stream) {
+  BufferedStreamWriter(OutStream* stream) {
     assert(stream != nullptr);
     init(stream);
   }
@@ -193,7 +193,7 @@ public:
     flush();
     assert(ptr_ == buffer_);
   }
-  void init(Stream* new_stream) {
+  void init(OutStream* new_stream) {
     stream_ = new_stream;
     ptr_ = buffer_;
   }
@@ -219,7 +219,7 @@ private:
   const uint8_t* end() const {
     return &buffer_[kBufferSize];
   }
-  Stream* stream_;
+  OutStream* stream_;
   uint8_t buffer_[kBufferSize];
   uint8_t* ptr_;
 };

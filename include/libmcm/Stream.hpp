@@ -3,10 +3,13 @@
 
 #include <libmcm/Error.hpp>  // for unimplemented_error
 
-// TODO: Drop in favor of std::basic_streambuf
-class Stream {
+// TODO: Drop in favor of std::istream
+class InStream {
     public:
         virtual uint64_t tellg() const {
+            throw libmcm::unimplemented_error(__FUNCTION__);
+        }
+        virtual void seekg(uint64_t pos) {
             throw libmcm::unimplemented_error(__FUNCTION__);
         }
         virtual int get() = 0;
@@ -26,53 +29,12 @@ class Stream {
             seekg(pos);
             return read(buf, n);
         }
-
-        virtual uint64_t tellp() const {
-            throw libmcm::unimplemented_error(__FUNCTION__);
-        }
-        virtual void put(int c) = 0;
-        virtual void write(const uint8_t* buf, size_t n) {
-            for (;n; --n) {
-                put(*(buf++));
-            }
-        }
-        virtual void writeat(uint64_t pos, const uint8_t* buf, size_t n) {
-            seekp(pos);
-            write(buf, n);
-        }
-        virtual void seekg(uint64_t pos) {
-            throw libmcm::unimplemented_error(__FUNCTION__);
-        }
-        virtual void seekp(uint64_t pos) {
-            throw libmcm::unimplemented_error(__FUNCTION__);
-        }
-        virtual ~Stream() {
-        }
         // Helper
-        void put16(uint16_t n) {
-            put(static_cast<uint8_t>(n >> 8));
-            put(static_cast<uint8_t>(n >> 0));
-        }
         uint16_t get16() {
             uint16_t ret = 0;
             ret = (ret << 8) | static_cast<uint16_t>(get());
             ret = (ret << 8) | static_cast<uint16_t>(get());
             return ret;
-        }
-#if 0
-        inline void leb128Encode(int64_t n) {
-            bool neg = n < 0;
-            if (neg) n = -n;
-            leb128Encode(static_cast<uint64_t>((n << 1) | (neg ? 1u : 0)));
-        }
-#endif
-        inline void leb128Encode(uint64_t n) {
-            while (n >= 0x80) {
-                auto c = static_cast<uint8_t>(0x80 | (n & 0x7F));
-                put(c);
-                n >>= 7;
-            }
-            put(static_cast<uint8_t>(n));
         }
         uint64_t leb128Decode() {
             uint64_t ret = 0;
@@ -85,12 +47,6 @@ class Stream {
             }
             return ret;
         }
-        void writeString(const char* str, char terminator) {
-            while (*str != '\0') {
-                put(*(str++));
-            }
-            put(terminator);
-        }
         std::string readString() {
             std::string s;
             for (;;) {
@@ -100,6 +56,54 @@ class Stream {
             }
             return s;
         }
+        virtual ~InStream() {}
+};
+
+// TODO: Drop in favor of std::ostream
+class OutStream {
+    public:
+        virtual uint64_t tellp() const {
+            throw libmcm::unimplemented_error(__FUNCTION__);
+        }
+        virtual void seekp(uint64_t pos) {
+            throw libmcm::unimplemented_error(__FUNCTION__);
+        }
+        virtual void put(int c) = 0;
+        virtual void write(const uint8_t* buf, size_t n) {
+            for (;n; --n) {
+                put(*(buf++));
+            }
+        }
+        virtual void writeat(uint64_t pos, const uint8_t* buf, size_t n) {
+            seekp(pos);
+            write(buf, n);
+        }
+        // Helper
+        void put16(uint16_t n) {
+            put(static_cast<uint8_t>(n >> 8));
+            put(static_cast<uint8_t>(n >> 0));
+        }
+        inline void leb128Encode(uint64_t n) {
+            while (n >= 0x80) {
+                auto c = static_cast<uint8_t>(0x80 | (n & 0x7F));
+                put(c);
+                n >>= 7;
+            }
+            put(static_cast<uint8_t>(n));
+        }
+        void writeString(const char* str, char terminator) {
+            while (*str != '\0') {
+                put(*(str++));
+            }
+            put(terminator);
+        }
+        virtual ~OutStream() {}
+};
+
+// TODO: Drop in favor of std::iostream
+class Stream : public virtual InStream, public virtual OutStream {
+    public:
+        virtual ~Stream() {}
 };
 
 #endif // _LIBMCM_STREAM_HPP_
