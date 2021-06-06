@@ -45,7 +45,7 @@
 #include "Range.hpp"         // for Range7
 #include "Reorder.hpp"       // for ReorderMap
 #include "SSE.hpp"           // for SSE
-#include "Util.hpp"          // for ALWAYS_INLINE, Clamp, Prefetch, dcheck
+#include "Util.hpp"          // for Clamp, Prefetch, dcheck
 #include "WordModel.hpp"     // for DictXMLModel, WordModel, WordModel::kMaxLen
 
 class Stream;
@@ -90,16 +90,16 @@ namespace cm {
   class CMProfile {
     static constexpr size_t kMaxOrder = 12;
   public:
-    ALWAYS_INLINE bool ModelEnabled(ModelType model, ModelType*& out) const {
+    inline bool ModelEnabled(ModelType model, ModelType*& out) const {
       bool enabled = ModelEnabled(model);
       if (enabled && out != nullptr) *(out++) = model;
       return enabled;
     }
-    ALWAYS_INLINE bool ModelEnabled(ModelType model) const {
+    inline bool ModelEnabled(ModelType model) const {
       return (enabled_models_ & (1U << static_cast<uint32_t>(model))) != 0;
     }
 
-    ALWAYS_INLINE void EnableModel(ModelType model) {
+    inline void EnableModel(ModelType model) {
       enabled_models_ |= 1 << static_cast<size_t>(model);
       CalculateMaxOrder();
     }
@@ -186,19 +186,19 @@ namespace cm {
 
   class ByteStateMap {
   public:
-    ALWAYS_INLINE static bool IsLeaf(uint32_t state) {
+    inline static bool IsLeaf(uint32_t state) {
       return (state >> 8) != 0;
     }
 
-    ALWAYS_INLINE uint32_t Next(uint32_t state, uint32_t bit) const {
+    inline uint32_t Next(uint32_t state, uint32_t bit) const {
       return next_[state][bit];
     }
 
-    ALWAYS_INLINE uint32_t GetBits(uint32_t state) {
+    inline uint32_t GetBits(uint32_t state) {
       return bits_[state];
     }
 
-    ALWAYS_INLINE void SetBits(uint32_t state, uint32_t bits) {
+    inline void SetBits(uint32_t state, uint32_t bits) {
       bits_[state] = bits;
     }
 
@@ -418,7 +418,7 @@ namespace cm {
 
     HistoryType* out_history_ = nullptr;
 
-    ALWAYS_INLINE uint32_t HashLookup(hash_t hash, bool prefetch_addr) {
+    inline uint32_t HashLookup(hash_t hash, bool prefetch_addr) {
       hash &= hash_mask_;
       const uint32_t ret = hash + kHashStart;
       if (prefetch_addr && kUsePrefetch) {
@@ -459,7 +459,7 @@ namespace cm {
 
     void init();
 
-    ALWAYS_INLINE uint32_t HashFunc(uint64_t a, uint64_t b) const {
+    inline uint32_t HashFunc(uint64_t a, uint64_t b) const {
       b += a;
       b += rotate_left(b * 7, 11);
       return b ^ (b >> 13);
@@ -492,18 +492,18 @@ namespace cm {
       mixers_[0].SetContext(mixer_ctx << 8);
     }
 
-    ALWAYS_INLINE uint8_t NextState(uint32_t index, uint8_t state, size_t bit, uint32_t updater, uint32_t ctx, size_t update = 9) {
+    inline uint8_t NextState(uint32_t index, uint8_t state, size_t bit, uint32_t updater, uint32_t ctx, size_t update = 9) {
       if (!kFixedProbs) {
         probs_[ctx + prob_ctx_add_].Update(state, updater, table_, update);
       }
       return state_trans_[state][bit];
     }
 
-    ALWAYS_INLINE int getP(uint8_t state, uint32_t ctx) const {
+    inline int getP(uint8_t state, uint32_t ctx) const {
       return probs_[ctx + kProbCtxPer].GetP(state);
     }
 
-    ALWAYS_INLINE int GetSTP(uint8_t state, uint32_t ctx) const {
+    inline int GetSTP(uint8_t state, uint32_t ctx) const {
       return probs_[ctx + prob_ctx_add_].GetSTP(state, table_);
     }
 
@@ -757,7 +757,7 @@ namespace cm {
       }
     }
 
-    ALWAYS_INLINE void GetHashes(uint32_t& h, const CMProfile& cur, size_t* ctx_ptr, ModelType* enabled) {
+    inline void GetHashes(uint32_t& h, const CMProfile& cur, size_t* ctx_ptr, ModelType* enabled) {
       const size_t
         p0 = static_cast<uint8_t>(last_bytes_ >> 0),
         p1 = static_cast<uint8_t>(last_bytes_ >> 8),

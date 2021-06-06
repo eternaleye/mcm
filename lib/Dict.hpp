@@ -128,7 +128,7 @@ public:
         }
       }
     }
-    ALWAYS_INLINE size_t size() const { return words_.size(); }
+    inline size_t size() const { return words_.size(); }
     void Clear() { words_.clear(); }
     void AddWord(const uint8_t* begin, const uint8_t* end) {
       while (words_.size() > max_words_) {
@@ -185,7 +185,7 @@ public:
     static const uint32_t kMaxContext = 16;
   public:
     SuffixSortComparator(const uint8_t* arr) : arr_(arr) {}
-    ALWAYS_INLINE bool operator()(uint32_t a, uint32_t b) const {
+    inline bool operator()(uint32_t a, uint32_t b) const {
       size_t max = std::min(std::min(a, b), kMaxContext);
       for (; max > 0; --max) {
         if (arr_[--a] != arr_[--b]) {

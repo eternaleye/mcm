@@ -14,7 +14,7 @@
 #include <libmcm/Error.hpp>   // for unimplemented_error
 #include <libmcm/Stream.hpp>  // for Stream
 
-#include "Util.hpp"           // for ALWAYS_INLINE, kBitsPerByte
+#include "Util.hpp"           // for kBitsPerByte
 
 class WriteStream : public Stream {
 public:
@@ -153,10 +153,10 @@ public:
     buffer_count = 0;
     done_ = false;
   }
-  ALWAYS_INLINE size_t remain() const {
+  inline size_t remain() const {
     return buffer_count - buffer_pos;
   }
-  ALWAYS_INLINE int get() {
+  inline int get() {
     if (UNLIKELY(remain() == 0 && Refill() == false)) {
       return EOF;
     }
@@ -169,7 +169,7 @@ public:
     return stream->tell() + buffer_pos;
   }
 private:
-  NO_INLINE bool Refill() {
+  bool Refill() {
     buffer_pos = 0;
     buffer_count = stream->read(buffer, buffer_size);
     if (UNLIKELY(buffer_count == 0)) {
@@ -195,11 +195,11 @@ public:
     stream_ = new_stream;
     ptr_ = buffer_;
   }
-  NO_INLINE void flush() {
+  void flush() {
     stream_->write(buffer_, ptr_ - buffer_);
     ptr_ = buffer_;
   }
-  ALWAYS_INLINE void put(uint8_t c) {
+  inline void put(uint8_t c) {
     if (UNLIKELY(ptr_ >= end())) {
       flush();
     }
@@ -228,25 +228,25 @@ class MemoryBitStream {
   uint32_t bits_;
   static const uint32_t kBitsPerSizeT = sizeof(uint32_t) * kBitsPerByte;
 public:
-  ALWAYS_INLINE MemoryBitStream(uint8_t* data) : data_(data), buffer_(0), bits_(0) {
+  inline MemoryBitStream(uint8_t* data) : data_(data), buffer_(0), bits_(0) {
   }
 
   uint8_t* getData() {
     return data_;
   }
 
-  ALWAYS_INLINE void tryReadByte() {
+  inline void tryReadByte() {
     if (bits_ <= kBitsPerSizeT - kBitsPerByte) {
       readByte();
     }
   }
 
-  ALWAYS_INLINE void readByte() {
+  inline void readByte() {
     buffer_ = (buffer_ << kBitsPerByte) | *data_++;
     bits_ += kBitsPerByte;
   }
 
-  ALWAYS_INLINE uint32_t readBits(uint32_t bits) {
+  inline uint32_t readBits(uint32_t bits) {
     if (kLazy) {
       while (bits_ < bits) {
         readByte();
@@ -263,7 +263,7 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE void flushByte() {
+  inline void flushByte() {
     bits_ -= kBitsPerByte;
     uint32_t byte = buffer_ >> bits_;
     buffer_ -= byte << bits_;
@@ -277,7 +277,7 @@ public:
     *data_++ = buffer_;
   }
 
-  ALWAYS_INLINE void writeBits(uint32_t data, uint32_t bits) {
+  inline void writeBits(uint32_t data, uint32_t bits) {
     bits_ += bits;
     buffer_ = (buffer_ << bits) | data;
     while (bits_ >= kBitsPerByte) {

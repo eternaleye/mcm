@@ -11,7 +11,7 @@
 
 #include "CyclicBuffer.hpp"  // for CyclicBuffer
 #include "Memory.hpp"        // for MemMap
-#include "Util.hpp"          // for ALWAYS_INLINE, Prefetch
+#include "Util.hpp"          // for Prefetch
 
 template <typename Model>
 class MatchModel {
@@ -69,20 +69,20 @@ public:
     assert(pos < space);
   }
 
-  ALWAYS_INLINE int getP(const short* st, size_t expected_bit) {
+  inline int getP(const short* st, size_t expected_bit) {
     dcheck(len != 0);
     return st[cur_mdl[expected_bit].getP()];
   }
 
-  ALWAYS_INLINE size_t getPos() const {
+  inline size_t getPos() const {
     return pos;
   }
 
-  ALWAYS_INLINE uint32_t GetExpectedBit() const {
+  inline uint32_t GetExpectedBit() const {
     return expected_code >> kCodeBitShift;
   }
 
-  ALWAYS_INLINE size_t getMinMatch() const {
+  inline size_t getMinMatch() const {
     return kMinMatch;
   }
 
@@ -110,19 +110,19 @@ public:
     updateCurMdl();
   }
 
-  ALWAYS_INLINE size_t getLength() const {
+  inline size_t getLength() const {
     return len;
   }
 
-  ALWAYS_INLINE void resetMatch() {
+  inline void resetMatch() {
     len = 0;
   }
 
-  ALWAYS_INLINE void setCtx(size_t ctx) {
+  inline void setCtx(size_t ctx) {
     model_base = &models[ctx * num_length_models_];
   }
 
-  NO_INLINE void search(Buffer& buffer, size_t spos) {
+  void search(Buffer& buffer, size_t spos) {
     // Reverse match.
     size_t blast = buffer.Pos() - 1;
     size_t len = sizeof(uint32_t);
@@ -150,7 +150,7 @@ public:
     Prefetch(&hash_table_[(hash_ ^ ctx) & hash_mask_]);
   }
 
-  NO_INLINE void update(Buffer& buffer) {
+  void update(Buffer& buffer) {
     const auto blast = buffer.Pos() - 1;
     const auto bmask = buffer.Mask();
     hash_ = hash_ ^ buffer[blast];
@@ -178,13 +178,13 @@ public:
     hash_ = h;
   }
 
-  ALWAYS_INLINE void updateCurMdl() {
+  inline void updateCurMdl() {
     if (len) {
       cur_mdl = model_base + 2 * std::min(len - kMinMatch, cur_max_match);
     }
   }
 
-  ALWAYS_INLINE uint32_t getExpectedChar(Buffer& buffer) const {
+  inline uint32_t getExpectedChar(Buffer& buffer) const {
     return buffer[pos + 1];
   }
 
@@ -192,11 +192,11 @@ public:
     expected_code = code << (kCodeBitShift + 1 - bit_len);
   }
 
-  ALWAYS_INLINE void updateCurMdl(size_t expected_bit, uint32_t bit, size_t learn_rate) {
+  inline void updateCurMdl(size_t expected_bit, uint32_t bit, size_t learn_rate) {
     cur_mdl[expected_bit].update(bit, learn_rate);
   }
 
-  ALWAYS_INLINE void UpdateBit(uint32_t bit, bool update_mdl = true, uint32_t learn_rate = 9) {
+  inline void UpdateBit(uint32_t bit, bool update_mdl = true, uint32_t learn_rate = 9) {
     if (len) {
       const auto expected_bit = GetExpectedBit();
       uint32_t diff = expected_bit ^ bit;

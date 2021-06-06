@@ -28,7 +28,7 @@
 #include <cstddef>   // for size_t
 #include <cstdint>   // for uint32_t
 
-#include "Util.hpp"  // for ALWAYS_INLINE, Clamp, dcheck
+#include "Util.hpp"  // for Clamp, dcheck
 
 // squash = ln(p/(1-p))
 // stretch = squash^-1 = 1/(1+e^-x)
@@ -126,24 +126,24 @@ public:
   }
 
   // 0 <= p < denom
-  ALWAYS_INLINE int st(uint32_t p) const {
+  inline int st(uint32_t p) const {
     return stretch_table_[p];
   }
 
   // minInt <= p < maxInt
-  ALWAYS_INLINE uint32_t sq(int p) const {
+  inline uint32_t sq(int p) const {
     if (p <= minInt) return 1;
     if (p >= maxInt) return denom - 1;
     return sqfast(p);
   }
 
-  ALWAYS_INLINE uint32_t squnsafe(int p) const {
+  inline uint32_t squnsafe(int p) const {
     dcheck(p >= minInt);
     dcheck(p < maxInt);
     return sqfast(p);
   }
 
-  ALWAYS_INLINE uint32_t sqfast(int p) const {
+  inline uint32_t sqfast(int p) const {
     return squash_table_fast_[static_cast<uint32_t>(p) & kFastTableMask];
   }
 };

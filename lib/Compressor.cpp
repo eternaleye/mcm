@@ -28,7 +28,7 @@
 
 #include <cstdint>    // for uint8_t, uint64_t
 
-ALWAYS_INLINE static void memcpy16(void* dest, const void* src, size_t len) {
+inline static void memcpy16(void* dest, const void* src, size_t len) {
   uint8_t* __restrict dest_ptr = reinterpret_cast<uint8_t* __restrict>(dest);
   const uint8_t* __restrict src_ptr = reinterpret_cast<const uint8_t* __restrict>(src);
   const uint8_t* __restrict limit = dest_ptr + len;

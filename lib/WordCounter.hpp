@@ -90,11 +90,11 @@ public:
     return word_;
   }
 
-  ALWAYS_INLINE size_t Count() const {
+  inline size_t Count() const {
     return normal_count_ + CapCount();
   }
 
-  ALWAYS_INLINE size_t CapCount() const {
+  inline size_t CapCount() const {
     return first_char_count_ + all_char_count_;
   }
 
@@ -309,7 +309,7 @@ private:
       return ret;
     }
 
-    ALWAYS_INLINE bool Equals(const Entry* other) const {
+    inline bool Equals(const Entry* other) const {
       return length_ == other->length_ && std::equal(data_, data_ + length_, other->data_);
     }
 

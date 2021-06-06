@@ -37,7 +37,7 @@
 #include "Model.hpp"         // for fastBitModel
 #include "Range.hpp"         // for Range7
 #include "Stream.hpp"        // for Stream (ptr only), BufferedStreamReader
-#include "Util.hpp"          // for ALWAYS_INLINE, KB, RoundUp, rotate_left
+#include "Util.hpp"          // for KB, RoundUp, rotate_left
 
 // Move to front.
 template <typename T>
@@ -58,7 +58,7 @@ public:
     }
     return data_.size();
   }
-  ALWAYS_INLINE T back() const {
+  inline T back() const {
     return data_.back();
   }
   size_t size() const {
@@ -195,7 +195,7 @@ class CMRolz : public Compressor {
   // Range coder.
   Range7 ent_;
   SSTable table_;
-  ALWAYS_INLINE uint32_t hashFunc(uint32_t a, uint32_t b) const {
+  inline uint32_t hashFunc(uint32_t a, uint32_t b) const {
     b += a;
     b += rotate_left(b, 11);
     return b ^ (b >> 6);
@@ -215,12 +215,12 @@ private:
     }
     return o0 ^ 256;
   }
-  ALWAYS_INLINE uint8_t nextState(uint8_t state, uint32_t bit, uint32_t ctx) {
+  inline uint8_t nextState(uint8_t state, uint32_t bit, uint32_t ctx) {
     probs_[ctx][state].update(bit, 9);
     return state_trans_[state][bit];
   }
 
-  ALWAYS_INLINE int getP(uint8_t state, uint32_t ctx) const {
+  inline int getP(uint8_t state, uint32_t ctx) const {
     return table_.st(probs_[ctx][state].getP());
   }
   template <const bool decode, typename TStream>
@@ -274,7 +274,7 @@ public:
       }
     }
 
-    ALWAYS_INLINE uint32_t add(uint32_t pos) {
+    inline uint32_t add(uint32_t pos) {
       uint32_t old = slots_[pos_];
       if (++pos_ == kSize) {
         pos_ = 0;
@@ -283,11 +283,11 @@ public:
       return old;
     }
 
-    ALWAYS_INLINE uint32_t operator[](uint32_t index) {
+    inline uint32_t operator[](uint32_t index) {
       return slots_[index];
     }
 
-    ALWAYS_INLINE uint32_t size() {
+    inline uint32_t size() {
       return kSize;
     }
 
@@ -392,7 +392,7 @@ public:
   virtual size_t compressBytes(byte* in, byte* out, size_t count);
   virtual void decompressBytes(byte* in, byte* out, size_t count);
   template<uint32_t pos>
-  ALWAYS_INLINE static byte* processMatch(byte matches, uint32_t lengths, byte* out, byte** in);
+  inline static byte* processMatch(byte matches, uint32_t lengths, byte* out, byte** in);
 
 private:
   static const bool kCountMatches = true;

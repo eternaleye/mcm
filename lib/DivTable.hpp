@@ -26,8 +26,6 @@
 
 #include <cstdint>   // for uint32_t
 
-#include "Util.hpp"  // for ALWAYS_INLINE
-
 template <typename T, const uint32_t shift_, const uint32_t size_>
 class DivTable {
   T data[size_];
@@ -42,15 +40,15 @@ public:
     }
   }
 
-  ALWAYS_INLINE uint32_t size() const {
+  inline uint32_t size() const {
     return size_;
   }
 
-  ALWAYS_INLINE T& operator [] (T i) {
+  inline T& operator [] (T i) {
     return data[i];
   }
 
-  ALWAYS_INLINE T operator [] (T i) const {
+  inline T operator [] (T i) const {
     return data[i];
   }
 };

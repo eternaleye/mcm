@@ -237,11 +237,11 @@ public:
     }
   }
 
-  ALWAYS_INLINE bool empty() const {
+  inline bool empty() const {
     return size() == 0;
   }
 
-  ALWAYS_INLINE size_t size() const {
+  inline size_t size() const {
     return buffer_.Size();
   }
 
@@ -286,7 +286,7 @@ public:
     sout.flush();
   }
 
-  ALWAYS_INLINE uint32_t at(uint32_t index) const {
+  inline uint32_t at(uint32_t index) const {
     assert(index < buffer_.Size());
     return buffer_[index];
   }

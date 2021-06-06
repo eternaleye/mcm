@@ -38,7 +38,7 @@
 #include <cstdio>              // for EOF
 
 #include "Stream.hpp"          // for Stream
-#include "Util.hpp"            // for KB, ALWAYS_INLINE
+#include "Util.hpp"            // for KB
 
 class ProgressMeter {
   uint64_t count;
@@ -54,11 +54,11 @@ public:
   ~ProgressMeter() {
   }
 
-  ALWAYS_INLINE uint64_t getCount() const {
+  inline uint64_t getCount() const {
     return count;
   }
 
-  ALWAYS_INLINE uint64_t addByte() {
+  inline uint64_t addByte() {
     return ++count;
   }
 
@@ -95,7 +95,7 @@ public:
     std::cout << oss.str() << "\t\r" << std::flush;
   }
 
-  ALWAYS_INLINE void addBytePrint(uint64_t total, const char* extra = "") {
+  inline void addBytePrint(uint64_t total, const char* extra = "") {
     if (!(addByte() & 0xFFFF)) {
       // 4 updates per second.
       // if (clock() - prev_time > 250) {

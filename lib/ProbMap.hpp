@@ -27,8 +27,6 @@
 #include <cstddef>  // for size_t
 #include <cstdint>  // for uint32_t, uint16_t, uint64_t, uint8_t, int16_t
 
-#include "Util.hpp"  // for ALWAYS_INLINE
-
 template <class Predictor, size_t kProbs>
 class DynamicProbMap {
 public:
@@ -78,12 +76,12 @@ public:
   }
   
   template <typename Table>
-  ALWAYS_INLINE void SetP(size_t index, int p, Table& t) {
+  inline void SetP(size_t index, int p, Table& t) {
     Set(index, p << (kPShift - kProbBits), 9, t.st(p));
   }
 
   template <typename Table>
-  ALWAYS_INLINE void Update(size_t index, size_t bit_updater, const Table& table, size_t dummy = 0) {
+  inline void Update(size_t index, size_t bit_updater, const Table& table, size_t dummy = 0) {
     uint64_t p = probs_[index];
     p >>= 16;
     const uint32_t lower = static_cast<uint32_t>(p);
@@ -94,13 +92,13 @@ public:
     probs_[index] = p;
   }
 
-  ALWAYS_INLINE int GetP(size_t index) const {
+  inline int GetP(size_t index) const {
     uint32_t p = probs_[index] >> 16;
     return p >> (kPShift - kProbBits);
   }
 
   template <typename Table>
-  ALWAYS_INLINE int GetSTP(size_t index, const Table& table) const {
+  inline int GetSTP(size_t index, const Table& table) const {
     return static_cast<int16_t>(static_cast<uint16_t>(probs_[index]));
   }
 
@@ -112,7 +110,7 @@ public:
   }
 
 private:
-  ALWAYS_INLINE void Set(size_t index, uint32_t p, uint8_t learn, int16_t stp) {
+  inline void Set(size_t index, uint32_t p, uint8_t learn, int16_t stp) {
     uint64_t acc = learn;
     acc = (acc << 32) | p;
     acc = (acc << 16) | static_cast<uint16_t>(stp);

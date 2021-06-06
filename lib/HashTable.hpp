@@ -31,7 +31,7 @@
 #include <cstddef>    // for size_t
 #include <cstdint>    // for uint32_t
 
-#include "Util.hpp"   // for hash_t, ALWAYS_INLINE
+#include "Util.hpp"   // for hash_t
 
 // Fixed size hash table.
 template <typename Key, typename Value>
@@ -70,11 +70,11 @@ public:
     table_[index] = entry_pos_ - 1;
   }
 
-  ALWAYS_INLINE uint32_t GetBucketIndex(hash_t hash) const {
+  inline uint32_t GetBucketIndex(hash_t hash) const {
     return hash & hash_mask_;
   }
 
-  ALWAYS_INLINE size_t Size() const {
+  inline size_t Size() const {
     return entry_pos_;
   }
 

@@ -45,7 +45,7 @@
 #include "SSE.hpp"           // for SSE
 #include "StateMap.hpp"      // for NSStateMap
 #include "Stream.hpp"        // for BufferedStreamWriter, BufferedStreamReader
-#include "Util.hpp"          // for KB, Clamp, MB, ALWAYS_INLINE
+#include "Util.hpp"          // for KB, MB, Clamp
 #include "WordModel.hpp"     // for WordModel
 
 template <const uint32_t level = 6>
@@ -195,7 +195,7 @@ public:
     byte_count = 0;
   }
 
-  ALWAYS_INLINE uint8_t nextState(uint8_t t, uint32_t bit, uint32_t smi = 0) {
+  inline uint8_t nextState(uint8_t t, uint32_t bit, uint32_t smi = 0) {
     return state_trans[t][bit];
   }
 

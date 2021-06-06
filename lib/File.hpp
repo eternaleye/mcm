@@ -38,7 +38,7 @@
 #include <cstdio>      // for size_t, ftello, SEEK_SET, clearerr, fclose
 
 #include "Stream.hpp"  // for Stream, WriteStream
-#include "Util.hpp"    // for ALWAYS_INLINE, check, dcheck
+#include "Util.hpp"    // for check, dcheck
 
 #ifndef WIN32
 #define _fseeki64 fseeko
@@ -155,7 +155,7 @@ public:
   }
 
   // Not thread safe.
-  ALWAYS_INLINE void put(int c) {
+  inline void put(int c) {
     ++offset;
     fputc(c, handle);
   }
@@ -244,13 +244,13 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE FILE* getHandle() {
+  inline FILE* getHandle() {
     return handle;
   }
 
   // Atomic read.
   // TODO: fread already acquires a lock.
-  ALWAYS_INLINE size_t readat(uint64_t pos, uint8_t* buffer, size_t bytes) {
+  inline size_t readat(uint64_t pos, uint8_t* buffer, size_t bytes) {
     std::unique_lock<std::mutex> mu(lock);
     seek(pos);
     return read(buffer, bytes);
@@ -258,27 +258,27 @@ public:
 
   // Atomic write.
   // TODO: fwrite already acquires a lock.
-  ALWAYS_INLINE void writeat(uint64_t pos, const uint8_t* buffer, size_t bytes) {
+  inline void writeat(uint64_t pos, const uint8_t* buffer, size_t bytes) {
     std::unique_lock<std::mutex> mu(lock);
     seek(pos);
     write(buffer, bytes);
   }
 
   // Atomic get (slow).
-  ALWAYS_INLINE int aget(uint64_t pos) {
+  inline int aget(uint64_t pos) {
     std::unique_lock<std::mutex> mu(lock);
     seek(pos);
     return get();
   }
 
   // Atomic write (slow).
-  ALWAYS_INLINE void aput(uint64_t pos, uint8_t c) {
+  inline void aput(uint64_t pos, uint8_t c) {
     std::unique_lock<std::mutex> mu(lock);
     seek(pos);
     put(c);
   }
 
-  ALWAYS_INLINE uint64_t length() {
+  inline uint64_t length() {
     std::unique_lock<std::mutex> mu(lock);
     seek(0, SEEK_END);
     uint64_t length = tell();
@@ -522,20 +522,20 @@ private:
   std::mutex lock;
 };
 
-ALWAYS_INLINE WriteStream& operator << (WriteStream& stream, uint8_t c) {
+inline WriteStream& operator << (WriteStream& stream, uint8_t c) {
   stream.put(c);
   return stream;
 }
 
-ALWAYS_INLINE WriteStream& operator << (WriteStream& stream, int8_t c) {
+inline WriteStream& operator << (WriteStream& stream, int8_t c) {
   return stream << static_cast<uint8_t>(c);
 }
 
-ALWAYS_INLINE WriteStream& operator << (WriteStream& stream, uint16_t c) {
+inline WriteStream& operator << (WriteStream& stream, uint16_t c) {
   return stream << static_cast<uint8_t>(c >> 8) << static_cast<uint8_t>(c);
 }
 
-ALWAYS_INLINE WriteStream& operator << (WriteStream& stream, int16_t c) {
+inline WriteStream& operator << (WriteStream& stream, int16_t c) {
   return stream << static_cast<uint16_t>(c);
 }
 

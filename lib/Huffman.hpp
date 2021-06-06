@@ -39,7 +39,7 @@
 #include "Compressor.hpp"     // for MemoryCompressor
 #include "ProgressMeter.hpp"  // for ProgressMeter
 #include "Range.hpp"          // for Range7
-#include "Util.hpp"           // for ALWAYS_INLINE, printIndexedArray, kBits...
+#include "Util.hpp"           // for printIndexedArray, kBits...
 
 class Huffman {
 public:
@@ -56,23 +56,23 @@ public:
     T weight_ = 0;
     std::unique_ptr<Tree> a_, b_;
   public:
-    ALWAYS_INLINE uint32_t Alphabet() const {
+    inline uint32_t Alphabet() const {
       return value_;
     }
 
-    ALWAYS_INLINE bool IsLeaf() const {
+    inline bool IsLeaf() const {
       return a_ == nullptr && b_ == nullptr;
     }
 
-    ALWAYS_INLINE T Weight() const {
+    inline T Weight() const {
       return weight_;
     }
 
-    ALWAYS_INLINE void SetWeight(T weight) {
+    inline void SetWeight(T weight) {
       weight_ = weight;
     }
 
-    ALWAYS_INLINE void SetValue(uint32_t value) {
+    inline void SetValue(uint32_t value) {
       value_ = value;
     }
 
@@ -251,21 +251,21 @@ public:
 
   static const uint16_t start_state = 0;
 
-  ALWAYS_INLINE static bool isLeaf(uint16_t state) {
+  inline static bool isLeaf(uint16_t state) {
     return (state & 0x100) != 0;
   }
 
-  ALWAYS_INLINE uint32_t getTransition(uint16_t state, uint32_t bit) {
+  inline uint32_t getTransition(uint16_t state, uint32_t bit) {
     assert(state < 256);
     return state_trans[state][bit];
   }
 
-  ALWAYS_INLINE static uint32_t getChar(uint16_t state) {
+  inline static uint32_t getChar(uint16_t state) {
     assert(isLeaf(state));
     return state ^ 0x100;
   }
 
-  ALWAYS_INLINE const Code& getCode(uint32_t index) const {
+  inline const Code& getCode(uint32_t index) const {
     return codes[index];
   }
 

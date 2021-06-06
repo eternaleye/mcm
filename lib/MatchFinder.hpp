@@ -34,14 +34,14 @@
 #include <cstdlib>           // for size_t, abort
 
 #include "CyclicBuffer.hpp"  // for CyclicDeque, CyclicBuffer
-#include "Util.hpp"          // for ALWAYS_INLINE, rotate_left, KB
+#include "Util.hpp"          // for rotate_left, KB
 
 // Generic match.
 class Match {
 public:
-  ALWAYS_INLINE Match(size_t pos = 0, size_t len = 0) : pos_(pos), len_(len) {}
-  ALWAYS_INLINE size_t Pos() const { return pos_; }
-  ALWAYS_INLINE size_t Length() const { return len_; }
+  inline Match(size_t pos = 0, size_t len = 0) : pos_(pos), len_(len) {}
+  inline size_t Pos() const { return pos_; }
+  inline size_t Length() const { return len_; }
 
 private:
   // Position, could be a distance back.
@@ -61,8 +61,8 @@ public:
   // If non match len == 0 and match == 0 then we are done.
   // virtual Match FindNextMatch() = 0;
   // virtual size_t GetNonMatchLen() const = 0;
-  ALWAYS_INLINE size_t MinMatch() const { return min_match_; }
-  ALWAYS_INLINE size_t MaxMatch() const { return max_match_; }
+  inline size_t MinMatch() const { return min_match_; }
+  inline size_t MaxMatch() const { return max_match_; }
 
 private:
   const size_t min_match_;
@@ -167,7 +167,7 @@ public:
   }
 
   // Return 0 to max_match_ as len.
-  ALWAYS_INLINE size_t MatchLen(size_t pos, size_t lookahead_offset = 0) const {
+  inline size_t MatchLen(size_t pos, size_t lookahead_offset = 0) const {
     static constexpr bool kFastMatch = true;
     size_t len = 0;
     auto* lookahead_ptr = ptr_ + lookahead_offset;
@@ -245,7 +245,7 @@ public:
     hash_table_.resize(mask_ + 1);
   }
 
-  ALWAYS_INLINE size_t HashLookahead(size_t offset) {
+  inline size_t HashLookahead(size_t offset) {
     size_t h = 0;
     const auto min_match = MF::MinMatch();
     for (size_t i = 0; i < min_match; ++i) {
@@ -314,7 +314,7 @@ public:
     return Match();
   }
 
-  ALWAYS_INLINE uint32_t hashFunc(uint32_t a, uint32_t b) const {
+  inline uint32_t hashFunc(uint32_t a, uint32_t b) const {
     b += a;
     b += rotate_left(b, 11);
     return b ^ (b >> 6);
@@ -335,7 +335,7 @@ public:
   void init(uint8_t* in, const uint8_t* limit);
   GreedyMatchFinder();
   Match FindNextMatch();
-  ALWAYS_INLINE hash_t HashFunc(uint32_t a, hash_t b) {
+  inline hash_t HashFunc(uint32_t a, hash_t b) {
     b += a;
     b += rotate_left(b, 6);
     return b ^ (b >> 23);
@@ -354,16 +354,16 @@ private:
       pos_ = std::numeric_limits<uint32_t>::max() - kMaxDist * 2;
       hash_ = 0;
     }
-    ALWAYS_INLINE static uint32_t getHash(uint32_t word, uint32_t slot) {
+    inline static uint32_t getHash(uint32_t word, uint32_t slot) {
       return slot | (word & ~0xFFU);
     }
-    ALWAYS_INLINE static uint32_t getLen(uint32_t word) {
+    inline static uint32_t getLen(uint32_t word) {
       return word & 0xFF;
     }
-    ALWAYS_INLINE static uint32_t buildWord(uint32_t h, uint32_t len) {
+    inline static uint32_t buildWord(uint32_t h, uint32_t len) {
       return (h & ~0xFFU) | len;
     }
-    ALWAYS_INLINE void setHash(uint32_t h) {
+    inline void setHash(uint32_t h) {
       hash_ = h;
     }
 

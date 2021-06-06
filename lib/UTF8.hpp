@@ -26,8 +26,6 @@
 
 #include <cstdint>   // for uint32_t
 
-#include "Util.hpp"  // for ALWAYS_INLINE
-
 template <bool error_check = false>
 class UTF8Decoder {
   // Accumulator word.
@@ -46,23 +44,23 @@ public:
     error = false;
   }
 
-  ALWAYS_INLINE bool done() const {
+  inline bool done() const {
     return !extra;
   }
 
-  ALWAYS_INLINE uint32_t getAcc() const {
+  inline uint32_t getAcc() const {
     return acc;
   }
 
-  ALWAYS_INLINE bool err() const {
+  inline bool err() const {
     return error;
   }
 
-  ALWAYS_INLINE void clear_err() {
+  inline void clear_err() {
     error = false;
   }
 
-  ALWAYS_INLINE void update(uint32_t c) {// 5 extra bits
+  inline void update(uint32_t c) {// 5 extra bits
     if (extra) {
       // Add another char to the UTF char.
       acc = (acc << 6) | (c & 0x3F);

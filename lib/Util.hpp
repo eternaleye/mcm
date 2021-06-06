@@ -42,14 +42,6 @@
 
 #define OVERRIDE
 
-#ifdef WIN32
-#define ALWAYS_INLINE __forceinline
-#define NO_INLINE __declspec(noinline)
-#else
-#define ALWAYS_INLINE inline __attribute__((always_inline))
-#define NO_INLINE __attribute__((noinline))
-#endif
-
 // TODO: Implement these.
 #define LIKELY(x) x
 #define UNLIKELY(x) x
@@ -76,7 +68,7 @@ static const uint32_t kPageSize = 4 * KB;
 static const uint32_t kBitsPerByte = 8;
 
 // Used by CM.hpp, MatchModel.hpp 
-ALWAYS_INLINE void Prefetch(const void* ptr) {
+inline void Prefetch(const void* ptr) {
 #ifdef WIN32
   _mm_prefetch((char*)ptr, _MM_HINT_T0);
 #else
@@ -85,22 +77,22 @@ ALWAYS_INLINE void Prefetch(const void* ptr) {
 }
 
 // Used by IsWordChar, MakeLowerCase, WordCounter.hpp
-ALWAYS_INLINE static bool IsUpperCase(int c) {
+inline static bool IsUpperCase(int c) {
   return c >= 'A' && c <= 'Z';
 }
 
 // Used by IsWordChar, MakeUpperCase, WordCounter.hpp
-ALWAYS_INLINE static bool IsLowerCase(int c) {
+inline static bool IsLowerCase(int c) {
   return c >= 'a' && c <= 'z';
 }
 
 // Used by Detector.hpp, Dict.hpp
-ALWAYS_INLINE static bool IsWordChar(int c) {
+inline static bool IsWordChar(int c) {
   return IsLowerCase(c) || IsUpperCase(c) || c >= 128;
 }
 
 // Used by Dict.hpp, WordCounter.hpp
-ALWAYS_INLINE static int MakeUpperCase(int c) {
+inline static int MakeUpperCase(int c) {
   if (IsLowerCase(c)) {
     c = c - 'a' + 'A';
   }
@@ -108,7 +100,7 @@ ALWAYS_INLINE static int MakeUpperCase(int c) {
 }
 
 // Used by Dict.hpp, WordModel.hpp
-ALWAYS_INLINE static int MakeLowerCase(int c) {
+inline static int MakeLowerCase(int c) {
   if (IsUpperCase(c)) {
     c = c - 'A' + 'a';
   }
@@ -117,13 +109,13 @@ ALWAYS_INLINE static int MakeLowerCase(int c) {
 
 // Used by WordModel.hpp, MatchFinder.hpp, CM.hpp, LZ.hpp 
 // https://blog.regehr.org/archives/1063
-ALWAYS_INLINE uint32_t rotate_left(uint32_t h, uint32_t bits) {
+inline uint32_t rotate_left(uint32_t h, uint32_t bits) {
   assert(bits < sizeof(h) * char_bit);
   return (h << bits) | (h >> (-bits & (sizeof(h) * CHAR_BIT - 1)));
 }
 
 // Used by Compressor.cpp, LZ-inl.hpp
-ALWAYS_INLINE void copy16bytes(uint8_t* __restrict out, const uint8_t* __restrict in) {
+inline void copy16bytes(uint8_t* __restrict out, const uint8_t* __restrict in) {
   _mm_storeu_ps(reinterpret_cast<float*>(out), _mm_loadu_ps(reinterpret_cast<const float*>(in)));
 }
 
@@ -200,18 +192,18 @@ template <uint32_t kAlphabetSize = 0x100>
 class FrequencyCounter {
   uint64_t frequencies_[kAlphabetSize] = {};
 public:
-  ALWAYS_INLINE void Add(uint32_t index, uint64_t count = 1) {
+  inline void Add(uint32_t index, uint64_t count = 1) {
     frequencies_[index] += count;
   }
 
   template <typename T>
-  ALWAYS_INLINE void AddRegion(const T* in, size_t count) {
+  inline void AddRegion(const T* in, size_t count) {
     for (size_t i = 0; i < count; ++i) {
       Add(in[i], 1);
     }
   }
 
-  ALWAYS_INLINE void Remove(uint32_t index, uint64_t count = 1) {
+  inline void Remove(uint32_t index, uint64_t count = 1) {
     dcheck(frequencies_[index] >= count);
     frequencies_[index] -= count;
   }

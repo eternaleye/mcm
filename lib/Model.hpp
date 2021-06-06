@@ -28,8 +28,6 @@
 #include <cstddef>  // for size_t
 #include <cstdint>  // for uint32_t, int32_t
 
-#include "Util.hpp" // for ALWAYS_INLINE
-
 template <const uint64_t n>
 struct _bitSize { static const uint64_t value = 1 + _bitSize<n / 2>::value; };
 
@@ -104,15 +102,15 @@ public:
   static const uint32_t learn_rate = _learn_rate;
   static const uint32_t max = 1 << shift;
 
-  ALWAYS_INLINE void init(int new_p = 1 << (_shift - 1)) {
+  inline void init(int new_p = 1 << (_shift - 1)) {
     setP(new_p);
   }
 
-  ALWAYS_INLINE bitLearnModel() {
+  inline bitLearnModel() {
     init();
   }
 
-  ALWAYS_INLINE void update(uint32_t bit) {
+  inline void update(uint32_t bit) {
     const size_t count = p & kCountMask;
     // 255 / 32 = 9
     const size_t learn_rate = 2 + (count >> 5);
@@ -121,15 +119,15 @@ public:
     p += count < kCountMask;
   }
 
-  ALWAYS_INLINE uint32_t getCount() {
+  inline uint32_t getCount() {
     return p & kCountMask;
   }
 
-  ALWAYS_INLINE void setP(uint32_t new_p, uint32_t count = kInitialCount << 5) {
+  inline void setP(uint32_t new_p, uint32_t count = kInitialCount << 5) {
     p = new_p << (31 - shift) | count;
   }
 
-  ALWAYS_INLINE uint32_t getP() const {
+  inline uint32_t getP() const {
     int ret = p >> (31 - shift);
     return ret;
   }
@@ -147,22 +145,22 @@ public:
   static const uint32_t learn_rate = _learn_rate;
   static const uint32_t max = 1 << shift;
 
-  ALWAYS_INLINE void init(int new_p = 1u << (_shift - 1)) {
+  inline void init(int new_p = 1u << (_shift - 1)) {
     p = new_p << (_bits - shift);
   }
-  ALWAYS_INLINE fastBitModel() {
+  inline fastBitModel() {
     init();
   }
-  ALWAYS_INLINE void update(T bit) {
+  inline void update(T bit) {
     update(bit, learn_rate);
   }
-  ALWAYS_INLINE void update(T bit, int32_t learn_rate, int32_t round = 0) {
+  inline void update(T bit, int32_t learn_rate, int32_t round = 0) {
     p += ((static_cast<int>(bit) << _bits) - static_cast<int>(p) + round) >> learn_rate;
   }
-  ALWAYS_INLINE void setP(uint32_t new_p) {
+  inline void setP(uint32_t new_p) {
     p = new_p << (_bits - shift);
   }
-  ALWAYS_INLINE uint32_t getP() const {
+  inline uint32_t getP() const {
     return p >> (_bits - shift);
   }
 };

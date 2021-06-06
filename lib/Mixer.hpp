@@ -32,8 +32,6 @@
 
 #include <emmintrin.h>  // for _mm_extract_epi16, _mm_insert_epi16, _mm_add_...
 
-#include "Util.hpp"     // for ALWAYS_INLINE
-
 template <const uint32_t A, const uint32_t B, const uint32_t C, const uint32_t D>
 struct shuffle {
   enum {
@@ -60,12 +58,12 @@ public:
   }
 
   // Calculate and return prediction.
-  ALWAYS_INLINE uint32_t p(int pr) const {
+  inline uint32_t p(int pr) const {
     return (pr * w + (skew << 12)) >> fp_shift;
   }
 
   // Neural network learn, assumes probs are stretched.
-  ALWAYS_INLINE void update(int p0, int pr, uint32_t bit, uint32_t pshift = 12) {
+  inline void update(int p0, int pr, uint32_t bit, uint32_t pshift = 12) {
     int err = ((bit << pshift) - pr) * 16;
     int round = 1 << (fp_shift - 1);
     w += (p0 * err + round) >> fp_shift;
@@ -89,27 +87,27 @@ public:
     Init(12);
   }
 
-  ALWAYS_INLINE static uint32_t NumWeights() {
+  inline static uint32_t NumWeights() {
     return kWeights;
   }
 
-  ALWAYS_INLINE int GetLearn() const {
+  inline int GetLearn() const {
     return learn_;
   }
 
-  ALWAYS_INLINE int NextLearn(size_t max_shift) {
+  inline int NextLearn(size_t max_shift) {
     auto before = learn_;
     ++learn_;
     learn_ -= learn_ >> max_shift;
     return before;
   }
 
-  ALWAYS_INLINE T GetWeight(uint32_t index) const {
+  inline T GetWeight(uint32_t index) const {
     assert(index < kWeights);
     return w_[index];
   }
 
-  ALWAYS_INLINE void SetWeight(uint32_t index, T weight) {
+  inline void SetWeight(uint32_t index, T weight) {
     assert(index < kWeights);
     w_[index] = weight;
   }
@@ -124,7 +122,7 @@ public:
   }
 
   // "Fast" version
-  ALWAYS_INLINE int P(
+  inline int P(
     int prob_shift,
     int p0 = 0, int p1 = 0, int p2 = 0, int p3 = 0, int p4 = 0, int p5 = 0, int p6 = 0, int p7 = 0,
     int p8 = 0, int p9 = 0, int p10 = 0, int p11 = 0, int p12 = 0, int p13 = 0, int p14 = 0, int p15 = 0) const {
@@ -148,7 +146,7 @@ public:
     return ptotal >> prob_shift;
   }
 
-  ALWAYS_INLINE bool Update(int pr, uint32_t bit,
+  inline bool Update(int pr, uint32_t bit,
     uint32_t prob_shift = 12, int limit = 24, int delta_round = 250, int skew_learn = 1,
     int learn_mult = 31, size_t shift = 16,
     int p0 = 0, int p1 = 0, int p2 = 0, int p3 = 0, int p4 = 0, int p5 = 0, int p6 = 0, int p7 = 0,
@@ -182,7 +180,7 @@ public:
 
 private:
   template <const int kIndex>
-  ALWAYS_INLINE void UpdateRec(int64_t p, int64_t err, size_t shift) {
+  inline void UpdateRec(int64_t p, int64_t err, size_t shift) {
     if (kWeights > kIndex) {
       w_[kIndex] += (err * p) >> shift;
     }
@@ -203,7 +201,7 @@ public:
     init();
   }
 
-  ALWAYS_INLINE int getLearn() const {
+  inline int getLearn() const {
     return learn;
   }
 
@@ -240,7 +238,7 @@ public:
   }
 
   // Calculate and return prediction.
-  ALWAYS_INLINE uint32_t p(__m128i probs) const {
+  inline uint32_t p(__m128i probs) const {
     __m128i dp = _mm_madd_epi16(w, probs);
     // p0*w0+p1*w1, ...
 
@@ -255,7 +253,7 @@ public:
   }
 
   // Neural network learn, assumes probs are stretched.
-  ALWAYS_INLINE bool update(__m128i probs, int pr, uint32_t bit, uint32_t pshift = 12, uint32_t limit = 13) {
+  inline bool update(__m128i probs, int pr, uint32_t bit, uint32_t pshift = 12, uint32_t limit = 13) {
     int err = ((bit << pshift) - pr) * learn;
     bool ret = false;
     // if the absolute error is greater than or equal to the threshold
@@ -294,11 +292,11 @@ public:
     init();
   }
 
-  ALWAYS_INLINE int getLearn() const {
+  inline int getLearn() const {
     return learn;
   }
 
-  ALWAYS_INLINE float getWeight(uint32_t index) const {
+  inline float getWeight(uint32_t index) const {
     assert(index < weights);
     return w[index];
   }
@@ -315,7 +313,7 @@ public:
   }
 
   // "Fast" version
-  ALWAYS_INLINE float p(
+  inline float p(
     float p0 = 0, float p1 = 0, float p2 = 0, float p3 = 0,
     float  p4 = 0, float p5 = 0, float p6 = 0, float p7 = 0) const {
     float ptotal = 0;
@@ -332,7 +330,7 @@ public:
   }
 
   // "Fast" version
-  ALWAYS_INLINE bool update(
+  inline bool update(
     float p0, float p1, float p2, float p3, float p4, float p5, float p6, float p7,
     int pr, uint32_t bit, uint32_t pshift = 12, uint32_t limit = 13) {
     float err = float(((1 ^ bit) << pshift) - pr) * learn * (1.0f / 256.0f);
@@ -352,7 +350,7 @@ public:
 
 private:
   template <const int index>
-  ALWAYS_INLINE void updateRec(float p, float err) {
+  inline void updateRec(float p, float err) {
     if (weights > index) {
       w[index] += p * err;
     }
@@ -373,23 +371,23 @@ public:
     SetContext(0);
   }
 
-  ALWAYS_INLINE size_t Size() const {
+  inline size_t Size() const {
     return mixers_.size();
   }
 
-  ALWAYS_INLINE void SetContext(size_t ctx) {
+  inline void SetContext(size_t ctx) {
     cur_mixers_ = &mixers_[ctx];
   }
 
-  ALWAYS_INLINE size_t GetContext() const {
+  inline size_t GetContext() const {
     return cur_mixers_ - &mixers_[0];
   }
 
-  ALWAYS_INLINE Mixer* GetMixer() {
+  inline Mixer* GetMixer() {
     return cur_mixers_;
   }
 
-  ALWAYS_INLINE Mixer* GetMixer(size_t idx) {
+  inline Mixer* GetMixer(size_t idx) {
     return &mixers_[idx];
   }
 };

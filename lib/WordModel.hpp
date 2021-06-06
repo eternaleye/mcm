@@ -29,7 +29,7 @@
 
 #include "Reorder.hpp"  // for ReorderMap
 #include "UTF8.hpp"     // for UTF8Decoder
-#include "Util.hpp"     // for ALWAYS_INLINE, MakeLowerCase, rotate_left
+#include "Util.hpp"     // for MakeLowerCase, rotate_left
 
 class WordModel {
 public:
@@ -59,7 +59,7 @@ public:
     opts_ = opts;
   }
 
-  ALWAYS_INLINE uint32_t& trans(char c) {
+  inline uint32_t& trans(char c) {
     uint32_t index = (uint32_t)(uint8_t)c;
     check(index < transform_table_size);
     return transform[index];
@@ -152,23 +152,23 @@ public:
     decoder.init();
   }
 
-  ALWAYS_INLINE void reset() {
+  inline void reset() {
     h1 = 0x1F20239A;
     h2 = 0xBE5FD47A;
     len = 0;
   }
 
-  ALWAYS_INLINE uint32_t getHash() const {
+  inline uint32_t getHash() const {
     auto ret = (h1 * 15) ^ (h2 * 41);
     ret ^= ret >> 4;
     return ret;
   }
 
-  ALWAYS_INLINE uint32_t getPrevHash() const {
+  inline uint32_t getPrevHash() const {
     return prev;
   }
 
-  ALWAYS_INLINE uint32_t getMixedHash() const {
+  inline uint32_t getMixedHash() const {
     auto ret = getHash();
     if (len < 2) {
       ret ^= getPrevHash();
@@ -176,11 +176,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE uint32_t get01Hash() const {
+  inline uint32_t get01Hash() const {
     return getHash() ^ getPrevHash();
   }
 
-  ALWAYS_INLINE size_t getLength() const {
+  inline size_t getLength() const {
     return len;
   }
 
@@ -199,7 +199,7 @@ public:
     return false;
   }
 
-  ALWAYS_INLINE uint64_t HashFunc(uint64_t c, uint64_t h) {
+  inline uint64_t HashFunc(uint64_t c, uint64_t h) {
     /*
     h ^= (h * (1 + 24 * 1)) >> 24;
     // h *= 61;

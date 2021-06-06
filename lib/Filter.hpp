@@ -67,43 +67,43 @@ class StaticBuffer {
 public:
   StaticBuffer() : pos_(0), size_(0) {
   }
-  ALWAYS_INLINE const T& operator[](size_t i) const {
+  inline const T& operator[](size_t i) const {
     return data_[i];
   }
-  ALWAYS_INLINE T& operator[](size_t i) {
+  inline T& operator[](size_t i) {
     return data_[i];
   }
-  ALWAYS_INLINE size_t pos() const {
+  inline size_t pos() const {
     return pos_;
   }
-  ALWAYS_INLINE size_t size() const {
+  inline size_t size() const {
     return size_;
   }
-  ALWAYS_INLINE size_t capacity() const {
+  inline size_t capacity() const {
 return kCapacity;
   }
-  ALWAYS_INLINE size_t reamainCapacity() const {
+  inline size_t reamainCapacity() const {
     return capacity() - size();
   }
-  ALWAYS_INLINE T get() {
+  inline T get() {
     (pos_ < size_);
     return data_[pos_++];
   }
-  ALWAYS_INLINE void read(T* ptr, size_t len) {
+  inline void read(T* ptr, size_t len) {
     dcheck(pos_ + len <= size_);
     std::copy(&data_[pos_], &data_[pos_ + len], &ptr[0]);
     pos_ += len;
   }
-  ALWAYS_INLINE void put(T c) {
+  inline void put(T c) {
     dcheck(pos_ < size_);
     data_[pos_++] = c;
   }
-  ALWAYS_INLINE void write(const T* ptr, size_t len) {
+  inline void write(const T* ptr, size_t len) {
     dcheck(pos_ + len <= size_);
     std::copy(&ptr[0], &ptr[len], &data_[pos_]);
     pos_ += len;
   }
-  ALWAYS_INLINE size_t remain() const {
+  inline size_t remain() const {
     return size_ - pos_;
   }
   void erase(size_t chars) {

@@ -84,7 +84,7 @@ public:
   }
 
   template <typename Subtype>
-  ALWAYS_INLINE static bool Detect(uint32_t last_word, Window<Subtype>& window, OffsetBlock* out) {
+  inline static bool Detect(uint32_t last_word, Window<Subtype>& window, OffsetBlock* out) {
     if (last_word != MakeWord('R', 'I', 'F', 'F')) {
       return false;
     }

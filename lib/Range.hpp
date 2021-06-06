@@ -27,8 +27,6 @@
 #include <cassert>   // for assert
 #include <cstdint>   // for uint32_t, uint8_t, uint64_t
 
-#include "Util.hpp"  // for ALWAYS_INLINE
-
 // From 7zip, added single bit functions
 class Range7 {
 private:
@@ -39,7 +37,7 @@ private:
   uint8_t _cache = 0;
 
   template <typename TOut>
-  ALWAYS_INLINE void shiftLow(TOut& sout) { //Emit the top byte 
+  inline void shiftLow(TOut& sout) { //Emit the top byte 
     if (static_cast<uint32_t>(Low) < static_cast<uint32_t>(0xFF << TopBits) || (Low >> 32) != 0) {
       uint8_t temp = _cache;
       do {
@@ -53,14 +51,14 @@ private:
   }
 public:
   template <typename TOut>
-  ALWAYS_INLINE void IncreaseRange(TOut& out) {
+  inline void IncreaseRange(TOut& out) {
     while (Range < TopValue) {
       Range <<= 8;
       shiftLow(out);
     }
   }
 
-  ALWAYS_INLINE uint32_t getDecodedBit(uint32_t p, uint32_t shift) {
+  inline uint32_t getDecodedBit(uint32_t p, uint32_t shift) {
     const uint32_t mid = (Range >> shift) * p;
     uint32_t bit = Code < mid;
     if (bit) {
@@ -73,7 +71,7 @@ public:
   }
 
   template <typename TOut>
-  ALWAYS_INLINE void encode(TOut& out, uint32_t bit, uint32_t p, uint32_t shift) {
+  inline void encode(TOut& out, uint32_t bit, uint32_t p, uint32_t shift) {
     assert(p < (1U << shift));
     assert(p != 0U);
     const uint32_t mid = (Range >> shift) * p;
@@ -87,7 +85,7 @@ public:
   }
 
   template <typename TIn>
-  ALWAYS_INLINE uint32_t decode(TIn& in, uint32_t p, uint32_t shift) {
+  inline uint32_t decode(TIn& in, uint32_t p, uint32_t shift) {
     assert(p < (1U << shift));
     assert(p != 0U);
     auto ret = getDecodedBit(p, shift);
@@ -229,7 +227,7 @@ public:
   }
 
   template <typename TIn>
-  ALWAYS_INLINE void Normalize(TIn& In) {
+  inline void Normalize(TIn& In) {
     while (Range < TopValue) {
       Code = (Code << 8) | (In.get() & 0xFF);
       Range <<= 8;

@@ -32,7 +32,7 @@
 
 #include "Mixer.hpp"  // for Mixer, MixerArray
 #include "Model.hpp"  // for bitLearnModel, fastBitModel
-#include "Util.hpp"   // for ALWAYS_INLINE, dcheck, Clamp, check
+#include "Util.hpp"   // for dcheck, Clamp, check
 
 // template <size_t kProbBits, size_t kStemBits = 5, class StationaryModel = fastBitModel<int, kProbBits, 8, 30>>
 template <size_t kProbBits, size_t kStemBits = 5, class StationaryModel = bitLearnModel<kProbBits, 8, 30>>
@@ -69,7 +69,7 @@ public:
     std::copy(&models[0], &models[kStems * (num_ctx - ctx)], &models[0] + ctx * kStems);
   }
 
-  ALWAYS_INLINE int p(size_t p, size_t ctx) {
+  inline int p(size_t p, size_t ctx) {
     dcheck(p < kMaxP);
     const size_t idx = p >> (kProbBits - kStemBits);
     dcheck(idx < kStems);
@@ -79,7 +79,7 @@ public:
     return (models[s1].getP() * (1 + kProbMask - mask) + models[s1 + 1].getP() * mask) >> (kProbBits - kStemBits);
   }
 
-  ALWAYS_INLINE void update(size_t bit) {
+  inline void update(size_t bit) {
 #if 0
     // 4 bits to 9 bits.
     const size_t delta1 = 4 * KB * opt;
@@ -152,7 +152,7 @@ public:
     std::copy(&models[0], &models[kStems * (num_ctx - ctx)], &models[ctx * kStems]);
   }
 
-  ALWAYS_INLINE int p(size_t p, size_t ctx) {
+  inline int p(size_t p, size_t ctx) {
     dcheck(p < kMaxP);
     const size_t idx = p >> (kProbBits - kStemBits);
     dcheck(idx < kStems);
@@ -166,7 +166,7 @@ public:
     // return (models[s1].getP() * (1 + kProbMask - mask) + models[s1 + 1].getP() * mask) >> (kProbBits - kStemBits);
   }
 
-  ALWAYS_INLINE void update(size_t bit) {
+  inline void update(size_t bit) {
     // models[pw].update(bit, 7);
     models[pw].update(bit);
   }
@@ -203,7 +203,7 @@ public:
     }
   }
 
-  ALWAYS_INLINE int p(size_t p, size_t ctx) {
+  inline int p(size_t p, size_t ctx) {
     mixers_.SetContext(ctx);
     // int stp = static_cast<int>(p) + kMinST;
     int stp = mixers_.GetMixer()->P(9, st_p_ = (static_cast<int>(p) + kMinST), kMaxST, kMinST);
@@ -212,7 +212,7 @@ public:
     return sq_p_;
   }
 
-  ALWAYS_INLINE void update(size_t bit) {
+  inline void update(size_t bit) {
     // models[pw].update(bit, 7);
     // mixers_.GetMixer()->Update(sq_p_, bit, kProbBits, 28, 1, st_p_, kMaxST, kMinST);
   }
@@ -245,14 +245,14 @@ public:
     std::copy(&models[0], &models[kStems * (num_ctx - ctx)], &models[ctx * kStems]);
   }
 
-  ALWAYS_INLINE int p(size_t p, size_t ctx) {
+  inline int p(size_t p, size_t ctx) {
     dcheck(p < kMaxP);
     const size_t idx = p >> (kProbBits - kStemBits);
     dcheck(idx < kStems);
     return models[pw = ctx * kStems + idx].getP();
   }
 
-  ALWAYS_INLINE void update(size_t bit) {
+  inline void update(size_t bit) {
     models[pw].update(bit);
   }
 };

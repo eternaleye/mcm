@@ -32,7 +32,7 @@
 #include <cstddef>    // for size_t
 #include <cstdint>    // for uint32_t
 
-#include "Util.hpp"   // for ALWAYS_INLINE, Endian, dcheck, kEndianLittle
+#include "Util.hpp"   // for Endian, dcheck, kEndianLittle
 
 template <typename T>
 class CyclicBuffer {
@@ -42,9 +42,9 @@ protected:
   T *data_;
 public:
 
-  ALWAYS_INLINE size_t Pos() const { return pos_; }
-  ALWAYS_INLINE size_t Mask() const { return mask_; }
-  ALWAYS_INLINE T* Data() { return data_; }
+  inline size_t Pos() const { return pos_; }
+  inline size_t Mask() const { return mask_; }
+  inline T* Data() { return data_; }
   size_t Prev(size_t pos, size_t count) const {
     // Relies on integer underflow behavior. Works since pow 2 size.
     return (pos - count) & mask_;
@@ -52,7 +52,7 @@ public:
   size_t Next(size_t pos, size_t count) const {
     return (pos + count) & mask_;
   }
-  ALWAYS_INLINE size_t Size() const {
+  inline size_t Size() const {
     return mask_ + 1;
   }
   virtual ~CyclicBuffer() {
@@ -61,7 +61,7 @@ public:
   virtual void Restart() {
     pos_ = 0;
   }
-  ALWAYS_INLINE void Push(T val) {
+  inline void Push(T val) {
     data_[pos_++ & mask_] = val;
   }
   void Push(const T* elements, size_t count) {
@@ -74,13 +74,13 @@ public:
     if (count == 0) return;
     std::copy_n(elements + copy_fist, count, &data_[0]);  // Copy remaining.
   }
-  ALWAYS_INLINE T& operator [] (size_t offset) {
+  inline T& operator [] (size_t offset) {
     return data_[offset & mask_];
   }
-  ALWAYS_INLINE T operator [] (size_t offset) const {
+  inline T operator [] (size_t offset) const {
     return data_[offset & mask_];
   }
-  ALWAYS_INLINE T operator () (size_t offset) const {
+  inline T operator () (size_t offset) const {
     return data_[offset];
   }
   virtual void release() {
@@ -121,7 +121,7 @@ class CyclicDeque : public CyclicBuffer<T> {
   size_t size_ = 0;
   size_t front_pos_ = 0;
 public:
-  ALWAYS_INLINE size_t Capacity() const {
+  inline size_t Capacity() const {
     return this->mask_ + 1;
   }
   void PopFront(size_t count = 1) {
@@ -139,22 +139,22 @@ public:
     ++size_;
     this->Push(c);
   }
-  ALWAYS_INLINE T Front() const {
+  inline T Front() const {
     return this->data_[front_pos_ & this->Mask()];
   }
-  ALWAYS_INLINE size_t Size() const {
+  inline size_t Size() const {
     return size_;
   }
-  ALWAYS_INLINE size_t Remain() const {
+  inline size_t Remain() const {
     return Capacity() - Size();
   }
-  ALWAYS_INLINE T operator [] (size_t offset) const {
+  inline T operator [] (size_t offset) const {
     return this->data_[(front_pos_ + offset) & this->Mask()];
   }
-  ALWAYS_INLINE bool Full() const {
+  inline bool Full() const {
     return this->Size() == Capacity();
   }
-  ALWAYS_INLINE bool Empty() const {
+  inline bool Empty() const {
     return this->Size() == 0;
   }
 };

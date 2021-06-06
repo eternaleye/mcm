@@ -27,7 +27,7 @@
 #include <cstdint>         // for uint8_t, uint32_t
 
 #include "Compressor.hpp"  // for Compressor
-#include "Util.hpp"        // for MakeWord, ALWAYS_INLINE, OffsetBlock (ptr ...
+#include "Util.hpp"        // for MakeWord, OffsetBlock (ptr only)
 
 template <typename Buffer> class Window;
 
@@ -61,7 +61,7 @@ public:
   }
 
   template <typename Subtype>
-  ALWAYS_INLINE static bool Detect(uint32_t last_word, Window<Subtype>& window, OffsetBlock* out) {
+  inline static bool Detect(uint32_t last_word, Window<Subtype>& window, OffsetBlock* out) {
     if (last_word != MakeWord('R', 'I', 'F', 'F')) {
       return false;
     }
