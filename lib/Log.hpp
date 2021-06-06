@@ -33,6 +33,14 @@
 // squash = ln(p/(1-p))
 // stretch = squash^-1 = 1/(1+e^-x)
 
+template <typename T>
+static void Inverse(T* out, const T* in, size_t count) {
+  check(in != out);
+  for (size_t i = 0; i < count; ++i) {
+    out[in[i]] = i;
+  }
+}
+
 inline double squash(double p) {
   if (p < 0.0001) return -999.0;
   if (p > 0.9999) return 999.0;

@@ -25,6 +25,7 @@
 #define _MATCH_FINDER_HPP_
 
 #include <algorithm>         // for min
+#include <array>             // for array
 #include <utility>           // for forward
 #include <vector>            // for vector
 
@@ -33,7 +34,7 @@
 #include <cstdlib>           // for size_t, abort
 
 #include "CyclicBuffer.hpp"  // for CyclicDeque, CyclicBuffer
-#include "Util.hpp"          // for ALWAYS_INLINE, StaticArray, rotate_left, KB
+#include "Util.hpp"          // for ALWAYS_INLINE, rotate_left, KB
 
 // Generic match.
 class Match {
@@ -150,7 +151,7 @@ protected:
   static const size_t kMaxNonMatch = 4 * KB;
   CyclicBuffer<uint8_t> buffer_;
   CyclicDeque<uint8_t> lookahead_;
-  StaticArray<uint8_t, kMaxNonMatch> nonmatch_;
+  std::array<uint8_t, kMaxNonMatch> nonmatch_;
   size_t nonmatch_len_;
 };
 

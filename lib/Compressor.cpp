@@ -28,6 +28,24 @@
 
 #include <cstdint>    // for uint8_t, uint64_t
 
+ALWAYS_INLINE static void memcpy16(void* dest, const void* src, size_t len) {
+  uint8_t* __restrict dest_ptr = reinterpret_cast<uint8_t* __restrict>(dest);
+  const uint8_t* __restrict src_ptr = reinterpret_cast<const uint8_t* __restrict>(src);
+  const uint8_t* __restrict limit = dest_ptr + len;
+  *dest_ptr++ = *src_ptr++;
+  if (len >= sizeof(__m128)) {
+    const uint8_t* __restrict limit2 = limit - sizeof(__m128);
+    do {
+      copy16bytes(dest_ptr, src_ptr);
+      src_ptr += sizeof(__m128);
+      dest_ptr += sizeof(__m128);
+    } while (dest_ptr < limit2);
+  }
+  while (dest_ptr < limit) {
+    *dest_ptr++ = *src_ptr++;
+  }
+}
+
 size_t MemCopyCompressor::getMaxExpansion(size_t in_size) {
   return in_size;
 }

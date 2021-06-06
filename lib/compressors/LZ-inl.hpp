@@ -29,6 +29,8 @@
 
 #include <cassert>    // for assert
 
+#include "Util.hpp"   // for ALWAYS_INLINE
+
 static inline uint8_t* WriteMatch(uint8_t* out, const uint8_t* in, size_t non_match_len, size_t match_len, uint16_t offset) {
   assert(match_len <= 15);
   assert(non_match_len <= 15);

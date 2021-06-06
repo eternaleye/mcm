@@ -35,6 +35,8 @@
 #include <cstddef>                 // for size_t
 #include <cstdint>                 // for uint64_t, uint32_t, uint8_t
 
+#include <libmcm/Compressor.hpp>   // for Compressor (ptr only)
+
 #include "compressors/LZ.hpp"      // for LZ16, SimpleEncoder
 #include "compressors/LZ-inl.hpp"  // for LZ16::compress, LZ16::decompress
 
@@ -43,11 +45,42 @@
 #include "MatchFinder.hpp"         // for FastMatchFinder, MemoryMatchFinder
 #include "Stream.hpp"              // for VoidWriteStream
 #include "Tests.hpp"               // for RunAllTests
-#include "Util.hpp"                // for trimDir, formatNumber
-
-class Compressor;
+#include "Util.hpp"                // for formatNumber
 
 static constexpr bool kReleaseBuild = false;
+
+// TODO<C++17>: Use std::filesystem
+std::string trimDir(const std::string& str) {
+  return str.substr(0, str.length() - (str.back() == '\\' || str.back() == '/'));
+}
+
+// TODO<C++17>: Use std::filesystem
+std::string trimExt(const std::string& str) {
+  std::streamsize start = 0, pos;
+  if ((pos = str.find_last_of('\\')) != std::string::npos) {
+    start = std::max(start, pos + 1);
+  }
+  if ((pos = str.find_last_of('/')) != std::string::npos) {
+    start = std::max(start, pos + 1);
+  }
+  return str.substr(static_cast<uint32_t>(start));
+}
+
+template <typename T>
+static void ReplaceSubstring(T* data, size_t old_pos, size_t len, size_t new_pos, size_t cur_len) {
+  if (old_pos == new_pos) {
+    return;
+  }
+  std::vector<T> temp(len);
+  // Delete cur and reinsert.
+  std::copy(&data[old_pos], &data[old_pos + len], &temp[0]);
+  cur_len -= len;
+  std::move(&data[old_pos + len], &data[old_pos + len + cur_len], &data[old_pos]);
+  // Reinsert.
+  new_pos = new_pos % (cur_len + 1);
+  std::move(&data[new_pos], &data[new_pos + cur_len], &data[new_pos + len]);
+  std::copy(&temp[0], &temp[len], &data[new_pos]);
+}
 
 static void printHeader() {
   std::cout

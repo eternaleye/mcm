@@ -51,6 +51,35 @@
 static const bool kTestFilter = false;
 static const size_t kSizePad = 10;
 
+template <typename Data, typename Perm>
+static void Permute(Data* out, const Data* in, const Perm* perm, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    out[i] = in[perm[i]];
+  }
+}
+
+std::string getExt(const std::string& str) {
+  for (int i = str.length(); i > 0; --i) {
+    auto c = str[i - 1];
+    if (c == '\\' || c == '/') break;
+    if (c == '.') {
+      return str.substr(i);
+    }
+  }
+  return "";
+}
+
+std::pair<std::string, std::string> GetFileName(const std::string& str) {
+  int i = str.length();
+  for (; i > 0; --i) {
+    if (str[i - 1] == '\\' || str[i - 1] == '/') {
+      return std::pair<std::string, std::string>(str.substr(0, i), str.substr(i));
+    }
+  }
+  // No directory.
+  return std::pair<std::string, std::string>("", str);
+}
+
 Archive::Header::Header() {
   std::copy(getMagic(), getMagic() + kMagicStringLength, magic_);
 }

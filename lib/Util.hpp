@@ -34,6 +34,7 @@
 #include <vector>       // for vector
 
 #include <cassert>      // for assert
+#include <climits>      // for CHAR_BIT
 #include <cstddef>      // for size_t
 #include <cstdint>      // for uint32_t, uint8_t, uint64_t, int64_t
 
@@ -49,9 +50,6 @@
 #define NO_INLINE __attribute__((noinline))
 #endif
 
-#define no_alias __restrict
-#define rst // no_alias
-
 // TODO: Implement these.
 #define LIKELY(x) x
 #define UNLIKELY(x) x
@@ -65,7 +63,7 @@ static const bool kIsDebugBuild = false;
 #ifdef _MSC_VER
 #define ASSUME(x) __assume(x)
 #else
-#define ASSUME(x)
+#define ASSUME(x) __builtin_assume(x)
 #endif
 
 typedef uint32_t hash_t;
@@ -77,6 +75,7 @@ static const uint32_t kCacheLineSize = 64; // Sandy bridge.
 static const uint32_t kPageSize = 4 * KB;
 static const uint32_t kBitsPerByte = 8;
 
+// Used by CM.hpp, MatchModel.hpp 
 ALWAYS_INLINE void Prefetch(const void* ptr) {
 #ifdef WIN32
   _mm_prefetch((char*)ptr, _MM_HINT_T0);
@@ -85,382 +84,85 @@ ALWAYS_INLINE void Prefetch(const void* ptr) {
 #endif
 }
 
+// Used by IsWordChar, MakeLowerCase, WordCounter.hpp
 ALWAYS_INLINE static bool IsUpperCase(int c) {
   return c >= 'A' && c <= 'Z';
 }
 
+// Used by IsWordChar, MakeUpperCase, WordCounter.hpp
 ALWAYS_INLINE static bool IsLowerCase(int c) {
   return c >= 'a' && c <= 'z';
 }
 
+// Used by Detector.hpp, Dict.hpp
 ALWAYS_INLINE static bool IsWordChar(int c) {
   return IsLowerCase(c) || IsUpperCase(c) || c >= 128;
 }
 
-ALWAYS_INLINE static int UpperToLower(int c) {
-  assert(IsUpperCase(c));
-  return c - 'A' + 'a';
-}
-
-ALWAYS_INLINE static int LowerToUpper(int c) {
-  assert(IsLowerCase(c));
-  return c - 'a' + 'A';
-}
-
+// Used by Dict.hpp, WordCounter.hpp
 ALWAYS_INLINE static int MakeUpperCase(int c) {
   if (IsLowerCase(c)) {
-    c = LowerToUpper(c);
+    c = c - 'a' + 'A';
   }
   return c;
 }
 
+// Used by Dict.hpp, WordModel.hpp
 ALWAYS_INLINE static int MakeLowerCase(int c) {
   if (IsUpperCase(c)) {
-    c = UpperToLower(c);
+    c = c - 'A' + 'a';
   }
   return c;
 }
 
-// Trust in the compiler
+// Used by WordModel.hpp, MatchFinder.hpp, CM.hpp, LZ.hpp 
+// https://blog.regehr.org/archives/1063
 ALWAYS_INLINE uint32_t rotate_left(uint32_t h, uint32_t bits) {
-  return (h << bits) | (h >> (sizeof(h) * 8 - bits));
+  assert(bits < sizeof(h) * char_bit);
+  return (h << bits) | (h >> (-bits & (sizeof(h) * CHAR_BIT - 1)));
 }
 
-ALWAYS_INLINE uint32_t rotate_right(uint32_t h, uint32_t bits) {
-  return (h << (sizeof(h) * 8 - bits)) | (h >> bits);
-}
-
-#define check(c) while (!(c)) { std::cerr << "check failed " << #c << std::endl; *reinterpret_cast<int*>(1234) = 4321;}
-#define dcheck(c) assert(c)
-
-template <const uint32_t A, const uint32_t B, const uint32_t C, const uint32_t D>
-struct shuffle {
-  enum {
-    value = (D << 6) | (C << 4) | (B << 2) | A,
-  };
-};
-
-ALWAYS_INLINE bool isPowerOf2(uint32_t n) {
-  return (n & (n - 1)) == 0;
-}
-
-ALWAYS_INLINE uint32_t bitSize(uint32_t Value) {
-  uint32_t Total = 0;
-  for (;Value;Value >>= 1, Total++);
-  return Total;
-}
-
-template <typename T>
-void printIndexedArray(const std::string& str, const T& arr) {
-  uint32_t index = 0;
-  std::cout << str << std::endl;
-  for (const auto& it : arr) {
-    if (it) {
-      std::cout << index << ":" << it << std::endl;
-    }
-    index++;
-  }
-}
-
-template <const uint64_t n>
-struct _bitSize { static const uint64_t value = 1 + _bitSize<n / 2>::value; };
-
-template <>
-struct _bitSize<0> { static const uint64_t value = 0; };
-
-inline void fatalError(const std::string& message) {
-  std::cerr << "Fatal error: " << message << std::endl;
-  *reinterpret_cast<uint32_t*>(1234) = 0;
-}
-
-inline void unimplementedError(const char* function) {
-  std::ostringstream oss;
-  oss << "Calling implemented function " << function;
-  fatalError(oss.str());
-}
-
-ALWAYS_INLINE int fastAbs(int n) {
-  int mask = n >> 31;
-  return (n ^ mask) - mask;
-}
-
-bool fileExists(const char* name);
-
-class Closure {
-public:
-  virtual void run() = 0;
-};
-
-template <typename Container>
-void deleteValues(Container& container) {
-  for (auto* p : container) {
-    delete p;
-  }
-  container.clear();
-}
-
-class ScopedLock {
-public:
-  ScopedLock(std::mutex& mutex) : mutex_(mutex) {
-    mutex_.lock();
-  }
-
-  ~ScopedLock() {
-    mutex_.unlock();
-  }
-
-private:
-  std::mutex& mutex_;
-};
-
-ALWAYS_INLINE void copy16bytes(uint8_t* no_alias out, const uint8_t* no_alias in) {
+// Used by Compressor.cpp, LZ-inl.hpp
+ALWAYS_INLINE void copy16bytes(uint8_t* __restrict out, const uint8_t* __restrict in) {
   _mm_storeu_ps(reinterpret_cast<float*>(out), _mm_loadu_ps(reinterpret_cast<const float*>(in)));
 }
 
-ALWAYS_INLINE static void memcpy16(void* dest, const void* src, size_t len) {
-  uint8_t* no_alias dest_ptr = reinterpret_cast<uint8_t* no_alias>(dest);
-  const uint8_t* no_alias src_ptr = reinterpret_cast<const uint8_t* no_alias>(src);
-  const uint8_t* no_alias limit = dest_ptr + len;
-  *dest_ptr++ = *src_ptr++;
-  if (len >= sizeof(__m128)) {
-    const uint8_t* no_alias limit2 = limit - sizeof(__m128);
-    do {
-      copy16bytes(dest_ptr, src_ptr);
-      src_ptr += sizeof(__m128);
-      dest_ptr += sizeof(__m128);
-    } while (dest_ptr < limit2);
-  }
-  while (dest_ptr < limit) {
-    *dest_ptr++ = *src_ptr++;
-  }
-}
+// Used by many
+#define check(c) while (!(c)) { std::cerr << "check failed " << #c << std::endl; *reinterpret_cast<int*>(1234) = 4321;}
+#define dcheck(c) assert(c)
 
-template<typename CopyUnit>
-ALWAYS_INLINE void fastcopy(uint8_t* no_alias out, const uint8_t* no_alias in, const uint8_t* limit) {
-  do {
-    *reinterpret_cast<CopyUnit* no_alias>(out) = *reinterpret_cast<const CopyUnit* no_alias>(in);
-    out += sizeof(CopyUnit);
-    in += sizeof(CopyUnit);
-  } while (in < limit);
-}
-
-ALWAYS_INLINE void memcpy16unsafe(uint8_t* no_alias out, const uint8_t* no_alias in, const uint8_t* limit) {
-  do {
-    copy16bytes(out, in);
-    out += 16;
-    in += 16;
-  } while (out < limit);
-}
-
-template<uint32_t kMaxSize>
-class FixedSizeByteBuffer {
-public:
-  uint32_t getMaxSize() const {
-    return kMaxSize;
-  }
-
-protected:
-  uint8_t buffer_[kMaxSize];
-};
-
-// Move to front.
-template <typename T>
-class MTF {
-  std::vector<T> data_;
-public:
-  void init(size_t n) {
-    data_.resize(n);
-    for (size_t i = 0; i < n; ++i) {
-      data_[i] = static_cast<T>(n - 1 - i);
-    }
-  }
-  size_t find(T value) {
-    for (size_t i = 0; i < data_.size(); ++i) {
-      if (data_[i] == value) {
-        return i;
-      }
-    }
-    return data_.size();
-  }
-  ALWAYS_INLINE T back() const {
-    return data_.back();
-  }
-  size_t size() const {
-    return data_.size();
-  }
-  void moveToFront(size_t index) {
-    auto old = data_[index];
-    while (index) {
-      data_[index] = data_[index - 1];
-      --index;
-    }
-    data_[0] = old;
-  }
-};
-
-template <class T, size_t kSize>
-class StaticArray {
-public:
-  StaticArray() {
-  }
-  ALWAYS_INLINE const T& operator[](size_t i) const {
-    return data_[i];
-  }
-  ALWAYS_INLINE T& operator[](size_t i) {
-    return data_[i];
-  }
-  ALWAYS_INLINE size_t size() const {
-    return kSize;
-  }
-
-private:
-  T data_[kSize];
-};
-
-template <class T, uint32_t kCapacity>
-class StaticBuffer {
-public:
-  StaticBuffer() : pos_(0), size_(0) {
-  }
-  ALWAYS_INLINE const T& operator[](size_t i) const {
-    return data_[i];
-  }
-  ALWAYS_INLINE T& operator[](size_t i) {
-    return data_[i];
-  }
-  ALWAYS_INLINE size_t pos() const {
-    return pos_;
-  }
-  ALWAYS_INLINE size_t size() const {
-    return size_;
-  }
-  ALWAYS_INLINE size_t capacity() const {
-return kCapacity;
-  }
-  ALWAYS_INLINE size_t reamainCapacity() const {
-    return capacity() - size();
-  }
-  ALWAYS_INLINE T get() {
-    (pos_ < size_);
-    return data_[pos_++];
-  }
-  ALWAYS_INLINE void read(T* ptr, size_t len) {
-    dcheck(pos_ + len <= size_);
-    std::copy(&data_[pos_], &data_[pos_ + len], &ptr[0]);
-    pos_ += len;
-  }
-  ALWAYS_INLINE void put(T c) {
-    dcheck(pos_ < size_);
-    data_[pos_++] = c;
-  }
-  ALWAYS_INLINE void write(const T* ptr, size_t len) {
-    dcheck(pos_ + len <= size_);
-    std::copy(&ptr[0], &ptr[len], &data_[pos_]);
-    pos_ += len;
-  }
-  ALWAYS_INLINE size_t remain() const {
-    return size_ - pos_;
-  }
-  void erase(size_t chars) {
-    dcheck(chars <= pos());
-    std::move(&data_[chars], &data_[size()], &data_[0]);
-    pos_ -= std::min(pos_, chars);
-    size_ -= std::min(size_, chars);
-  }
-  void addPos(size_t n) {
-    pos_ += n;
-    dcheck(pos_ <= size());
-  }
-  void addSize(size_t n) {
-    size_ += n;
-    dcheck(size_ <= capacity());
-  }
-  T* begin() {
-    return &operator[](0);
-  }
-  T* end() {
-    return &operator[](size_);
-  }
-  T* limit() {
-    return &operator[](capacity());
-  }
-
-private:
-  size_t pos_;
-  size_t size_;
-  T data_[kCapacity];
-};
-
+// Used by many
 std::string prettySize(uint64_t size);
 std::string formatNumber(uint64_t n);
 std::string errstr(int err);
 uint64_t computeRate(uint64_t size, uint64_t delta_time);
-std::vector<uint8_t> loadFile(const std::string& name, uint32_t max_size = 0xFFFFFFF);
-std::string trimExt(const std::string& str);
-std::string trimDir(const std::string& str);
-std::string getExt(const std::string& str);
-std::pair<std::string, std::string> GetFileName(const std::string& str);
 
+// Used by many
+// TODO<C++17>: Replace with std::clamp
 static inline int Clamp(int a, int min, int max) {
   if (a < min) a = min;
   if (a > max) a = max;
   return a;
 }
 
+// Used by RoundUp
 static inline const size_t RoundDown(size_t n, size_t r) {
   return n - n % r;
 }
 
+// Used by LZ.hpp, WordCounter.hpp
 static inline const size_t RoundUp(size_t n, size_t r) {
   return RoundDown(n + r - 1, r);
 }
 
-template <typename T>
-static inline T* AlignUp(T* ptr, size_t r) {
-  return reinterpret_cast<T*>(RoundUp(reinterpret_cast<size_t>(ptr), r));
-}
-
-template <typename T>
-static void ReplaceSubstring(T* data, size_t old_pos, size_t len, size_t new_pos, size_t cur_len) {
-  if (old_pos == new_pos) {
-    return;
-  }
-  std::vector<T> temp(len);
-  // Delete cur and reinsert.
-  std::copy(&data[old_pos], &data[old_pos + len], &temp[0]);
-  cur_len -= len;
-  std::move(&data[old_pos + len], &data[old_pos + len + cur_len], &data[old_pos]);
-  // Reinsert.
-  new_pos = new_pos % (cur_len + 1);
-  std::move(&data[new_pos], &data[new_pos + cur_len], &data[new_pos + len]);
-  std::copy(&temp[0], &temp[len], &data[new_pos]);
-}
-
-template <typename T>
-static void Inverse(T* out, const T* in, size_t count) {
-  check(in != out);
-  for (size_t i = 0; i < count; ++i) {
-    out[in[i]] = i;
-  }
-}
-
-template <typename Data, typename Perm>
-static void Permute(Data* out, const Data* in, const Perm* perm, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    out[i] = in[perm[i]];
-  }
-}
-
-template <typename Data, typename Perm>
-static void InversePermute(Data* out, const Data* in, const Perm* perm, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    out[perm[i]] = in[i];
-  }
-}
-
+// Used by Tests.cpp
 void RunUtilTests();
+
+// Used by Archive.cpp, Util.cpp
+// TODO<C++17>: Use std::filesystem
 bool IsAbsolutePath(const std::string& path);
 
+// Used by Archive.cpp, bin/mcm.cpp
 template <typename T>
 std::vector<T> ReadCSI(const std::string& file) {
   std::ifstream fin(file.c_str());
@@ -476,20 +178,24 @@ std::vector<T> ReadCSI(const std::string& file) {
   return ret;
 }
 
+// Used by JPEG.hpp, Wav16.hpp
 static inline constexpr uint32_t MakeWord(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   return (a << 24) | (b << 16) | (c << 8) | (d << 0);
 }
 
+// Used by CyclicBuffer.hpp, Memory.hpp, Wav16.hpp
 enum Endian {
   kEndianLittle,
   kEndianBig,
 };
 
+// Used by JPEG.hpp, Wav16.hpp, Detector.hpp
 struct OffsetBlock {
   size_t offset;
   size_t len;
 };
 
+// Used by many
 template <uint32_t kAlphabetSize = 0x100>
 class FrequencyCounter {
   uint64_t frequencies_[kAlphabetSize] = {};

@@ -2,6 +2,7 @@
 #define _MATCH_MODEL_HPP_
 
 #include <algorithm>         // for min
+#include <memory>            // for align
 #include <vector>            // for vector
 
 #include <cassert>           // for assert
@@ -10,7 +11,7 @@
 
 #include "CyclicBuffer.hpp"  // for CyclicBuffer
 #include "Memory.hpp"        // for MemMap
-#include "Util.hpp"          // for ALWAYS_INLINE, AlignUp, Prefetch, isPowe...
+#include "Util.hpp"          // for ALWAYS_INLINE, Prefetch
 
 template <typename Model>
 class MatchModel {
@@ -57,12 +58,15 @@ public:
   }
 
   void resize(size_t size) {
-    hash_mask_ = size - 1;
+    hash_mask_ = size > 0 ? size - 1 : size;
     hash_mask_prefetch_ = hash_mask_ - (kCacheLineSize / sizeof(uint32_t) - 1);
     // Check power of 2.
-    assert(isPowerOf2(hash_mask_ + 1));
+    assert(hash_mask & (hash_mask + 1));
     hash_storage.resize((hash_mask_ + 1) * sizeof(uint32_t) + kCacheLineSize);
-    hash_table_ = reinterpret_cast<uint32_t*>(AlignUp(hash_storage.getData(), kCacheLineSize));
+    auto space = hash_storage.getSize();
+    auto data = hash_storage.getData();
+    hash_table_ = reinterpret_cast<uint32_t*>(std::align(kCacheLineSize, kCacheLineSize, data, space));
+    assert(pos < space);
   }
 
   ALWAYS_INLINE int getP(const short* st, size_t expected_bit) {

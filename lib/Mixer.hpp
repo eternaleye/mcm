@@ -32,8 +32,14 @@
 
 #include <emmintrin.h>  // for _mm_extract_epi16, _mm_insert_epi16, _mm_add_...
 
-#include "Util.hpp"     // for ALWAYS_INLINE, fastAbs, shuffle, shuffle<>::v...
+#include "Util.hpp"     // for ALWAYS_INLINE
 
+template <const uint32_t A, const uint32_t B, const uint32_t C, const uint32_t D>
+struct shuffle {
+  enum {
+    value = (D << 6) | (C << 4) | (B << 2) | A,
+  };
+};
 
 template <const uint32_t fp_shift = 14>
 class Mix1 {
@@ -252,7 +258,8 @@ public:
   ALWAYS_INLINE bool update(__m128i probs, int pr, uint32_t bit, uint32_t pshift = 12, uint32_t limit = 13) {
     int err = ((bit << pshift) - pr) * learn;
     bool ret = false;
-    if (fastAbs(err) >= (round >> (pshift - 1))) {
+    // if the absolute error is greater than or equal to the threshold
+    if ((err ^ (err >> 31) - (err >> 31)) >= (round >> (pshift - 1))) {
       err >>= 3;
       probs = _mm_slli_epi32(probs, 3);
       if (err > 32767) err = 32767; // Make sure we don't overflow.

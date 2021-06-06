@@ -45,7 +45,7 @@
 #include "SSE.hpp"           // for SSE
 #include "StateMap.hpp"      // for NSStateMap
 #include "Stream.hpp"        // for BufferedStreamWriter, BufferedStreamReader
-#include "Util.hpp"          // for no_alias, KB, Clamp, MB, ALWAYS_INLINE
+#include "Util.hpp"          // for KB, Clamp, MB, ALWAYS_INLINE
 #include "WordModel.hpp"     // for WordModel
 
 template <const uint32_t level = 6>
@@ -218,7 +218,7 @@ public:
     size_t lzp_hash = owhash;
     size_t lzp_bit_hash = (hashify(lzp_hash ^ (lzp_hash >> 26))) & hash_mask;
     const uint32_t learn_rate = 9;
-    uint8_t *no_alias s0 = &hash_table[lzp_bit_hash];
+    uint8_t *__restrict s0 = &hash_table[lzp_bit_hash];
     auto& pr0 = probs[4][*s0];
     int p = pr0.getP();
     p += p == 0;
@@ -287,8 +287,8 @@ public:
     int ctx = 1;
     do {
       uint8_t
-        *no_alias s0 = nullptr, *no_alias s1 = nullptr, *no_alias s2 = nullptr, *no_alias s3 = nullptr,
-        *no_alias s4 = nullptr, *no_alias s5 = nullptr, *no_alias s6 = nullptr, *no_alias s7 = nullptr;
+        *__restrict s0 = nullptr, *__restrict s1 = nullptr, *__restrict s2 = nullptr, *__restrict s3 = nullptr,
+        *__restrict s4 = nullptr, *__restrict s5 = nullptr, *__restrict s6 = nullptr, *__restrict s7 = nullptr;
 
       s0 = &o1ptr[ctx];
       s1 = &hash_table[o2h ^ ctx];

@@ -45,7 +45,7 @@
 #include "Range.hpp"         // for Range7
 #include "Reorder.hpp"       // for ReorderMap
 #include "SSE.hpp"           // for SSE
-#include "Util.hpp"          // for rst, ALWAYS_INLINE, Clamp, Prefetch, dcheck
+#include "Util.hpp"          // for ALWAYS_INLINE, Clamp, Prefetch, dcheck
 #include "WordModel.hpp"     // for DictXMLModel, WordModel, WordModel::kMaxLen
 
 class Stream;
@@ -536,8 +536,10 @@ namespace cm {
 				}
 				const auto mm_l = match_model_.getLength();
 				uint8_t
-					*rst sp0, *rst sp1, *rst sp2, *rst sp3, *rst sp4, *rst sp5, *rst sp6, *rst sp7,
-					*rst sp8, *rst sp9, *rst sp10, *rst sp11, *rst sp12, *rst sp13, *rst sp14, *rst sp15;
+					*__restrict sp0,  *__restrict sp1,  *__restrict sp2,  *__restrict sp3,
+                    *__restrict sp4,  *__restrict sp5,  *__restrict sp6,  *__restrict sp7,
+                    *__restrict sp8,  *__restrict sp9,  *__restrict sp10, *__restrict sp11,
+                    *__restrict sp12, *__restrict sp13, *__restrict sp14, *__restrict sp15;
 				uint8_t
 					s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, s5 = 0, s6 = 0, s7 = 0,
 					s8 = 0, s9 = 0, s10 = 0, s11 = 0, s12 = 0, s13 = 0, s14 = 0, s15 = 0;

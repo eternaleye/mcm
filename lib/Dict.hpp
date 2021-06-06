@@ -24,23 +24,23 @@
 #ifndef _DICT_HPP_
 #define _DICT_HPP_
 
-#include <algorithm>           // for max, min, sort, copy, count
-#include <chrono>              // for high_resolution_clock, duration, durat...
-#include <iostream>            // for operator<<, basic_ostream, basic_ostre...
-#include <memory>              // for allocator_traits<>::value_type
-#include <string>              // for string, basic_string, hash, operator==
-#include <unordered_map>       // for unordered_map, operator!=, _Node_iterator
-#include <utility>             // for pair
-#include <vector>              // for vector, vector<>::reverse_iterator
+#include <algorithm>        // for max, min, sort, copy, count
+#include <chrono>           // for high_resolution_clock, duration, duration...
+#include <iostream>         // for operator<<, basic_ostream, basic_ostream_...
+#include <memory>           // for allocator_traits<>::value_type
+#include <string>           // for string, basic_string, hash, operator==
+#include <unordered_map>    // for unordered_map, operator!=, _Node_iterator
+#include <utility>          // for pair
+#include <vector>           // for vector, vector<>::reverse_iterator
 
-#include <cassert>             // for assert
-#include <cstddef>             // for size_t
-#include <cstdint>             // for uint8_t, uint32_t, int64_t
+#include <cassert>          // for assert
+#include <cstddef>          // for size_t
+#include <cstdint>          // for uint8_t, uint32_t, int64_t
 
-#include "Filter.hpp"          // for ByteStreamFilter
-#include "Stream.hpp"          // for ReadMemoryStream, WriteVectorStream
-#include "Util.hpp"            // for MakeLowerCase, FrequencyCounter, MakeU...
-#include "WordCounter.hpp"     // for WordCount::CompareLexicographically
+#include "Filter.hpp"       // for ByteStreamFilter
+#include "Stream.hpp"       // for ReadMemoryStream, WriteVectorStream
+#include "Util.hpp"         // for FrequencyCounter
+#include "WordCounter.hpp"  // for WordCount::CompareLexicographically
 
 enum WordModifier {
   kWordNormal,

@@ -28,11 +28,6 @@
 #include <iomanip>       // for operator<<, setfill, setw
 #include <system_error>  // for system_error, system_category
 
-bool fileExists(const char* name) {
-  std::ifstream fin(name, std::ios_base::in);
-  return fin.good();
-}
-
 std::string prettySize(uint64_t size) {
   uint64_t units;
   const char* name;
@@ -66,19 +61,6 @@ uint64_t computeRate(uint64_t size, uint64_t delta_time) {
   return static_cast<uint64_t>(size / seconds);
 }
 
-std::vector<uint8_t> loadFile(const std::string& name, uint32_t max_size) {
-  std::vector<uint8_t> ret;
-  std::ifstream fin(name.c_str(), std::ios_base::in | std::ios_base::binary);
-  for (uint32_t i = 0; i < max_size; ++i) {
-    int c = fin.get();
-    if (fin.eof()) {
-      break;
-    }
-    ret.push_back(static_cast<uint8_t>(static_cast<uint32_t>(c)));
-  }
-  return ret;
-}
-
 std::string formatNumber(uint64_t n) {
   std::string ret;
   while (n >= 1000) {
@@ -88,43 +70,6 @@ std::string formatNumber(uint64_t n) {
     n /= 1000;
   }
   return std::to_string(n) + ret;
-}
-
-std::string trimDir(const std::string& str) {
-  return str.substr(0, str.length() - (str.back() == '\\' || str.back() == '/'));
-}
-
-std::string trimExt(const std::string& str) {
-  std::streamsize start = 0, pos;
-  if ((pos = str.find_last_of('\\')) != std::string::npos) {
-    start = std::max(start, pos + 1);
-  }
-  if ((pos = str.find_last_of('/')) != std::string::npos) {
-    start = std::max(start, pos + 1);
-  }
-  return str.substr(static_cast<uint32_t>(start));
-}
-
-std::string getExt(const std::string& str) {
-  for (int i = str.length(); i > 0; --i) {
-    auto c = str[i - 1];
-    if (c == '\\' || c == '/') break;
-    if (c == '.') {
-      return str.substr(i);
-    }
-  }
-  return "";
-}
-
-std::pair<std::string, std::string> GetFileName(const std::string& str) {
-  int i = str.length();
-  for (; i > 0; --i) {
-    if (str[i - 1] == '\\' || str[i - 1] == '/') {
-      return std::pair<std::string, std::string>(str.substr(0, i), str.substr(i));
-    }
-  }
-  // No directory.
-  return std::pair<std::string, std::string>("", str);
 }
 
 bool IsAbsolutePath(const std::string& path) {

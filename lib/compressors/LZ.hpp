@@ -39,6 +39,41 @@
 #include "Stream.hpp"        // for Stream (ptr only), BufferedStreamReader
 #include "Util.hpp"          // for ALWAYS_INLINE, KB, RoundUp, rotate_left
 
+// Move to front.
+template <typename T>
+class MTF {
+  std::vector<T> data_;
+public:
+  void init(size_t n) {
+    data_.resize(n);
+    for (size_t i = 0; i < n; ++i) {
+      data_[i] = static_cast<T>(n - 1 - i);
+    }
+  }
+  size_t find(T value) {
+    for (size_t i = 0; i < data_.size(); ++i) {
+      if (data_[i] == value) {
+        return i;
+      }
+    }
+    return data_.size();
+  }
+  ALWAYS_INLINE T back() const {
+    return data_.back();
+  }
+  size_t size() const {
+    return data_.size();
+  }
+  void moveToFront(size_t index) {
+    auto old = data_[index];
+    while (index) {
+      data_[index] = data_[index - 1];
+      --index;
+    }
+    data_[0] = old;
+  }
+};
+
 template <typename MF, typename Encoder, typename Decoder>
 class StreamingLZCombo : public Compressor {
 public:

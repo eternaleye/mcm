@@ -28,7 +28,13 @@
 #include <cstddef>  // for size_t
 #include <cstdint>  // for uint32_t, int32_t
 
-#include "Util.hpp" // for ALWAYS_INLINE, _bitSize
+#include "Util.hpp" // for ALWAYS_INLINE
+
+template <const uint64_t n>
+struct _bitSize { static const uint64_t value = 1 + _bitSize<n / 2>::value; };
+
+template <>
+struct _bitSize<0> { static const uint64_t value = 0; };
 
 #pragma warning(disable : 4146)
 

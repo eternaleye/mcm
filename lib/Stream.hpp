@@ -11,15 +11,15 @@
 #include <cstdio>             // for EOF
 #include <cstdint>            // for uint8_t, uint64_t, uint32_t, uint16_t
 
+#include <libmcm/Error.hpp>   // for unimplemented_error
 #include <libmcm/Stream.hpp>  // for Stream
 
-#include "Util.hpp"           // for unimplementedError, ALWAYS_INLINE, kBitsPerByte
+#include "Util.hpp"           // for ALWAYS_INLINE, kBitsPerByte
 
 class WriteStream : public Stream {
 public:
   virtual int get() {
-    unimplementedError(__FUNCTION__);
-    return 0;
+    throw libmcm::unimplemented_error(__FUNCTION__);
   }
   virtual void put(int c) = 0;
   virtual ~WriteStream() {}
@@ -48,7 +48,7 @@ class ReadStream : public Stream {
 public:
   virtual int get() = 0;
   virtual void put(int c) {
-    unimplementedError(__FUNCTION__);
+    throw libmcm::unimplemented_error(__FUNCTION__);
   }
   virtual ~ReadStream() {}
 };
@@ -163,7 +163,7 @@ public:
     return buffer[buffer_pos++];
   }
   void put(int c) {
-    unimplementedError(__FUNCTION__);
+    throw libmcm::unimplemented_error(__FUNCTION__);
   }
   uint64_t tell() const {
     return stream->tell() + buffer_pos;
@@ -206,8 +206,7 @@ public:
     *(ptr_++) = c;
   }
   int get() {
-    unimplementedError(__FUNCTION__);
-    return 0;
+    throw libmcm::unimplemented_error(__FUNCTION__);
   }
   uint64_t tell() const {
     return stream_->tell() + (ptr_ - buffer_);
@@ -224,7 +223,7 @@ private:
 
 template <const bool kLazy = true>
 class MemoryBitStream {
-  uint8_t* no_alias data_;
+  uint8_t* __restrict data_;
   uint32_t buffer_;
   uint32_t bits_;
   static const uint32_t kBitsPerSizeT = sizeof(uint32_t) * kBitsPerByte;

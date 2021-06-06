@@ -367,7 +367,16 @@ public:
     }
 
     // Print frequencies
-    printIndexedArray("frequencies", freq);
+    {
+      uint32_t index = 0;
+      std::cout << "frequencies" << std::endl;
+      for (const auto& it : freq) {
+        if (it) {
+          std::cout << index << ":" << it << std::endl;
+        }
+        index++;
+      }
+    }
     sin.restart();
 
     // Build length limited tree with package merge algorithm.

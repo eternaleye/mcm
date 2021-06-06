@@ -31,7 +31,7 @@
 #include <cstdio>      // for size_t, EOF
 
 #include "Stream.hpp"  // for Stream
-#include "Util.hpp"    // for KB, UNLIKELY, check, FrequencyCounter, StaticB...
+#include "Util.hpp"    // for KB, UNLIKELY, check, FrequencyCounter
 
 /*
 Filter usage:
@@ -60,6 +60,80 @@ public:
   }
 
   virtual void flush() {}
+};
+
+template <class T, uint32_t kCapacity>
+class StaticBuffer {
+public:
+  StaticBuffer() : pos_(0), size_(0) {
+  }
+  ALWAYS_INLINE const T& operator[](size_t i) const {
+    return data_[i];
+  }
+  ALWAYS_INLINE T& operator[](size_t i) {
+    return data_[i];
+  }
+  ALWAYS_INLINE size_t pos() const {
+    return pos_;
+  }
+  ALWAYS_INLINE size_t size() const {
+    return size_;
+  }
+  ALWAYS_INLINE size_t capacity() const {
+return kCapacity;
+  }
+  ALWAYS_INLINE size_t reamainCapacity() const {
+    return capacity() - size();
+  }
+  ALWAYS_INLINE T get() {
+    (pos_ < size_);
+    return data_[pos_++];
+  }
+  ALWAYS_INLINE void read(T* ptr, size_t len) {
+    dcheck(pos_ + len <= size_);
+    std::copy(&data_[pos_], &data_[pos_ + len], &ptr[0]);
+    pos_ += len;
+  }
+  ALWAYS_INLINE void put(T c) {
+    dcheck(pos_ < size_);
+    data_[pos_++] = c;
+  }
+  ALWAYS_INLINE void write(const T* ptr, size_t len) {
+    dcheck(pos_ + len <= size_);
+    std::copy(&ptr[0], &ptr[len], &data_[pos_]);
+    pos_ += len;
+  }
+  ALWAYS_INLINE size_t remain() const {
+    return size_ - pos_;
+  }
+  void erase(size_t chars) {
+    dcheck(chars <= pos());
+    std::move(&data_[chars], &data_[size()], &data_[0]);
+    pos_ -= std::min(pos_, chars);
+    size_ -= std::min(size_, chars);
+  }
+  void addPos(size_t n) {
+    pos_ += n;
+    dcheck(pos_ <= size());
+  }
+  void addSize(size_t n) {
+    size_ += n;
+    dcheck(size_ <= capacity());
+  }
+  T* begin() {
+    return &operator[](0);
+  }
+  T* end() {
+    return &operator[](size_);
+  }
+  T* limit() {
+    return &operator[](capacity());
+  }
+
+private:
+  size_t pos_;
+  size_t size_;
+  T data_[kCapacity];
 };
 
 // Byte filter is complicated since filters are not necessarily a 1:1 mapping.

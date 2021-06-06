@@ -48,6 +48,19 @@ static const uint32_t kTestIterations = 10;
 static const uint32_t kIterations = 256;
 static const uint32_t kBenchDataSize = 7654321;
 
+std::vector<uint8_t> loadFile(const std::string& name, uint32_t max_size) {
+  std::vector<uint8_t> ret;
+  std::ifstream fin(name.c_str(), std::ios_base::in | std::ios_base::binary);
+  for (uint32_t i = 0; i < max_size; ++i) {
+    int c = fin.get();
+    if (fin.eof()) {
+      break;
+    }
+    ret.push_back(static_cast<uint8_t>(static_cast<uint32_t>(c)));
+  }
+  return ret;
+}
+
 typedef FixedDeltaFilter<2, 2> WavDeltaFilter;
 
 class SimpleFilter : public ByteStreamFilter<4 * KB, 4 * KB> {
