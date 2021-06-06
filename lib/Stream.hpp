@@ -7,6 +7,7 @@
 #include <vector>             // for vector
 
 #include <cassert>            // for assert
+#include <climits>            // for CHAR_BIT
 #include <cstddef>            // for size_t
 #include <cstdio>             // for EOF
 #include <cstdint>            // for uint8_t, uint64_t, uint32_t, uint16_t
@@ -14,7 +15,7 @@
 #include <libmcm/Error.hpp>   // for unimplemented_error
 #include <libmcm/Stream.hpp>  // for Stream
 
-#include "Util.hpp"           // for kBitsPerByte
+#include "Util.hpp"           // for KB
 
 class WriteStream : public Stream {
 public:
@@ -226,7 +227,7 @@ class MemoryBitStream {
   uint8_t* __restrict data_;
   uint32_t buffer_;
   uint32_t bits_;
-  static const uint32_t kBitsPerSizeT = sizeof(uint32_t) * kBitsPerByte;
+  static const uint32_t kBitsPerSizeT = sizeof(uint32_t) * CHAR_BIT;
 public:
   inline MemoryBitStream(uint8_t* data) : data_(data), buffer_(0), bits_(0) {
   }
@@ -236,14 +237,14 @@ public:
   }
 
   inline void tryReadByte() {
-    if (bits_ <= kBitsPerSizeT - kBitsPerByte) {
+    if (bits_ <= kBitsPerSizeT - CHAR_BIT) {
       readByte();
     }
   }
 
   inline void readByte() {
-    buffer_ = (buffer_ << kBitsPerByte) | *data_++;
-    bits_ += kBitsPerByte;
+    buffer_ = (buffer_ << CHAR_BIT) | *data_++;
+    bits_ += CHAR_BIT;
   }
 
   inline uint32_t readBits(uint32_t bits) {
@@ -264,14 +265,14 @@ public:
   }
 
   inline void flushByte() {
-    bits_ -= kBitsPerByte;
+    bits_ -= CHAR_BIT;
     uint32_t byte = buffer_ >> bits_;
     buffer_ -= byte << bits_;
     *data_++ = byte;
   }
 
   void flush() {
-    while (bits_ > kBitsPerByte) {
+    while (bits_ > CHAR_BIT) {
       flushByte();
     }
     *data_++ = buffer_;
@@ -280,7 +281,7 @@ public:
   inline void writeBits(uint32_t data, uint32_t bits) {
     bits_ += bits;
     buffer_ = (buffer_ << bits) | data;
-    while (bits_ >= kBitsPerByte) {
+    while (bits_ >= CHAR_BIT) {
       flushByte();
     }
   }

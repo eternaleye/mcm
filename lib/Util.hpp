@@ -59,7 +59,6 @@ static const uint64_t MB = KB * KB;
 static const uint64_t GB = KB * MB;
 static const uint32_t kCacheLineSize = 64; // Sandy bridge.
 static const uint32_t kPageSize = 4 * KB;
-static const uint32_t kBitsPerByte = 8;
 
 // Used by CM.hpp, MatchModel.hpp 
 inline void Prefetch(const void* ptr) {

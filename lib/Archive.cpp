@@ -33,6 +33,7 @@
 #include <utility>                 // for pair, move
 
 #include <cctype>                  // for isdigit
+#include <climits>                 // for CHAR_BIT
 #include <cstddef>                 // for size_t
 #include <cstdint>                 // for uint64_t, uint32_t, uint8_t
 
@@ -285,7 +286,7 @@ Filter* Archive::Algorithm::createFilter(Stream* stream, Analyzer* analyzer, Arc
           std::cerr << i << " bits " << codes[i].length << " freq " << freq.GetFrequencies()[i] << std::endl;
           total_bits += codes[i].length * freq.GetFrequencies()[i];
         }
-        std::cerr << std::endl << "After " << freq.Sum() << " huff " << total_bits / kBitsPerByte << std::endl;
+        std::cerr << std::endl << "After " << freq.Sum() << " huff " << total_bits / CHAR_BIT << std::endl;
       }
       dict_filter->SetFrequencies(freq);
       dict_filter->setOpt(opt_var);

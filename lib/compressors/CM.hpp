@@ -28,6 +28,7 @@
 #include <iosfwd>            // for ostream
 #include <vector>            // for vector
 
+#include <climits>           // for CHAR_BIT
 #include <cstddef>           // for size_t
 #include <cstdint>           // for uint8_t, uint32_t, uint64_t, int32_t
 
@@ -521,7 +522,7 @@ namespace cm {
 		size_t ProcessBits(TStream& stream, const size_t c, size_t* base_contexts, size_t ctx_add) {
 			uint32_t code = 0;
 			if (!kDecode) {
-        code = c << (sizeof(uint32_t) * kBitsPerByte - kBits);
+        code = c << (sizeof(uint32_t) * CHAR_BIT - kBits);
 			}
       size_t base_ctx = 0;
       size_t cur_ctx = 0;
@@ -1043,8 +1044,8 @@ namespace cm {
       }
       // Non match, do normal encoding.
       size_t n = (sse_ctx_ != 0) ?
-        ProcessBits<decode, kBitTypeNormalSSE, kBitsPerByte>(stream, c, base_contexts, 0) :
-				ProcessBits<decode, kBitTypeNormal, kBitsPerByte>(stream, c, base_contexts, 0);
+        ProcessBits<decode, kBitTypeNormalSSE, CHAR_BIT>(stream, c, base_contexts, 0) :
+				ProcessBits<decode, kBitTypeNormal, CHAR_BIT>(stream, c, base_contexts, 0);
       if (decode) {
 				c = n;
       }

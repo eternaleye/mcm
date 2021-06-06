@@ -28,6 +28,7 @@
 #include <iostream>   // for operator<<, basic_ostream, basic_ostream<>::__o...
 
 #include <cassert>    // for assert
+#include <climits>    // for CHAR_BIT
 
 static inline uint8_t* WriteMatch(uint8_t* out, const uint8_t* in, size_t non_match_len, size_t match_len, uint16_t offset) {
   assert(match_len <= 15);
@@ -114,7 +115,7 @@ size_t LZ16<MatchFinder>::compress(uint8_t* in, uint8_t* out, size_t count) {
 
     }
     for (size_t i = 0; i < kBits; ++i) {
-      std::cout << "non match bytes for bits " << i + 1 << ": " << bits[i] / kBitsPerByte << std::endl;
+      std::cout << "non match bytes for bits " << i + 1 << ": " << bits[i] / CHAR_BIT << std::endl;
     }
   }
   return out_ptr - out;

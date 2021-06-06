@@ -33,13 +33,14 @@
 #include <vector>             // for vector, vector::size_type
 
 #include <cassert>            // for assert
+#include <climits>            // for CHAR_BIT
 #include <cstdint>            // for uint32_t, uint16_t, uint8_t, uint64_t
 #include <cstdio>             // for size_t, EOF
 
 #include "Compressor.hpp"     // for MemoryCompressor
 #include "ProgressMeter.hpp"  // for ProgressMeter
 #include "Range.hpp"          // for Range7
-#include "Util.hpp"           // for printIndexedArray, kBits...
+#include "Util.hpp"           // for printIndexedArray
 
 class Huffman {
 public:
@@ -124,7 +125,7 @@ public:
     Tree(Tree* a, Tree* b) : weight_(a->Weight() + b->Weight()), a_(a), b_(b) {}
 
     void PrintRatio(std::ostream& os, const char* name) const {
-      os << "Huffman tree " << name << ": " << Weight() << " -> " << Cost() / kBitsPerByte << std::endl;
+      os << "Huffman tree " << name << ": " << Weight() << " -> " << Cost() / CHAR_BIT << std::endl;
     }
 
     // Based off of example from Introduction to Data Compression.
@@ -436,7 +437,7 @@ class HuffmanStatic : public MemoryCompressor {
   static const uint32_t kAlphabetSize = 256;
 public:
   virtual uint32_t getMaxExpansion(uint32_t in_size) {
-    return in_size * 6 / 5 + (kCodeBits * 256 / kBitsPerByte + 100);
+    return in_size * 6 / 5 + (kCodeBits * 256 / CHAR_BIT + 100);
   }
   virtual uint32_t compressBytes(uint8_t* in, uint8_t* out, uint32_t count);
   virtual void decompressBytes(uint8_t* in, uint8_t* out, uint32_t count);
