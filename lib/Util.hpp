@@ -51,7 +51,9 @@ typedef uint32_t hash_t;
 static const uint64_t KB = 1024;
 static const uint64_t MB = KB * KB;
 static const uint64_t GB = KB * MB;
+// TODO: Use sysconf(_SC_LEVEL1_DCACHE_LINESIZE) on Linux
 static const uint32_t kCacheLineSize = 64; // Sandy bridge.
+// TODO: Use sysconf(_SC_PAGE_SIZE) on Linux
 static const uint32_t kPageSize = 4 * KB;
 
 // Used by CM.hpp, MatchModel.hpp 
