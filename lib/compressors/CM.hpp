@@ -440,7 +440,7 @@ namespace cm {
        bool lzp_enabled = true,
        Detector::Profile profile = Detector::kProfileDetect);
 
-    bool setOpt(uint32_t var) OVERRIDE {
+    bool setOpt(uint32_t var) {
       opt_var_ = var;
       word_model_.setOpt(var);
       match_model_.setOpt(var);
@@ -449,7 +449,7 @@ namespace cm {
       return true;
     }
 
-    virtual bool setOpts(size_t* opts) OVERRIDE {
+    virtual bool setOpts(size_t* opts) {
       opts_ = opts;
       special_char_model_.SetOpts(opts);
       bracket_.SetOpts(opts);

@@ -453,7 +453,7 @@ public:
     // 2b count
     // 3b count
 
-    FrequencyCounter<256> GetFrequencies() OVERRIDE {
+    FrequencyCounter<256> GetFrequencies() {
       return freq_;
     }
 

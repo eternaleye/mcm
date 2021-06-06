@@ -411,7 +411,7 @@ public:
     }
     delete cur_stream_;
   }
-  Stream* openNewStream(size_t index) OVERRIDE {
+  Stream* openNewStream(size_t index) {
     if (cur_stream_ != nullptr) {
       delete cur_stream_;
       cur_stream_ = nullptr;
@@ -464,7 +464,7 @@ public:
       r -= c;
     }
   }
-  Stream* openNewStream(size_t index) OVERRIDE {
+  Stream* openNewStream(size_t index) {
     subBytes(last_idx_);
     verify_stream_.resetCount();
     // Open the new file.
