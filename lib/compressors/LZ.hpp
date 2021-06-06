@@ -341,7 +341,7 @@ public:
     while (len < dist) {
       typedef unsigned long ulong;
       auto diff = *reinterpret_cast<const ulong*>(in_ptr_ + len) ^ *reinterpret_cast<const ulong*>(match_ptr + len);
-      if (UNLIKELY(diff)) {
+      if (diff) {
         ulong idx = 0;
 #ifdef WIN32
         // TODO

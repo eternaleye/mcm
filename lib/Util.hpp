@@ -40,10 +40,6 @@
 
 #include <xmmintrin.h>  // for __m128, _mm_loadu_ps, _mm_storeu_ps
 
-// TODO: Implement these.
-#define LIKELY(x) x
-#define UNLIKELY(x) x
-
 #ifdef _DEBUG
 static const bool kIsDebugBuild = true;
 #else

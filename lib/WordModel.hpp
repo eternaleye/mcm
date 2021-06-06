@@ -187,7 +187,7 @@ public:
   // Return true if just finished word.
   bool update(uint8_t c) {
     const auto cur = transform[c];
-    if (LIKELY(cur != transform_table_size)) {
+    if (cur != transform_table_size) {
       h1 = HashFunc(cur, h1);
       h2 = h1 * 24;
       len += len < 16;

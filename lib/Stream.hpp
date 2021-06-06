@@ -157,7 +157,7 @@ public:
     return buffer_count - buffer_pos;
   }
   inline int get() {
-    if (UNLIKELY(remain() == 0 && Refill() == false)) {
+    if (remain() == 0 && Refill() == false) {
       return EOF;
     }
     return buffer[buffer_pos++];
@@ -172,7 +172,7 @@ private:
   bool Refill() {
     buffer_pos = 0;
     buffer_count = stream->read(buffer, buffer_size);
-    if (UNLIKELY(buffer_count == 0)) {
+    if (buffer_count == 0) {
       done_ = true;
       return false;
     }
@@ -200,7 +200,7 @@ public:
     ptr_ = buffer_;
   }
   inline void put(uint8_t c) {
-    if (UNLIKELY(ptr_ >= end())) {
+    if (ptr_ >= end()) {
       flush();
     }
     *(ptr_++) = c;

@@ -31,7 +31,7 @@
 #include <cstdio>      // for size_t, EOF
 
 #include "Stream.hpp"  // for Stream
-#include "Util.hpp"    // for KB, UNLIKELY, check, FrequencyCounter
+#include "Util.hpp"    // for KB, check, FrequencyCounter
 
 /*
 Filter usage:
@@ -148,7 +148,7 @@ public:
   explicit ByteStreamFilter(Stream* stream) : stream_(stream), count_(0) {
   }
   virtual int get() {
-    if (UNLIKELY(out_buffer_.remain() == 0)) {
+    if (out_buffer_.remain() == 0) {
       if (refillReadAndProcess() == 0) {
         return EOF;
       }
@@ -271,7 +271,7 @@ public:
     flushWrite();
   }
   virtual int get() {
-    if (UNLIKELY(block_pos_ >= block_size_)) {
+    if (block_pos_ >= block_size_) {
       if (refillRead() == 0) {
         return EOF;
       }
@@ -297,7 +297,7 @@ public:
     return ptr - buf;
   }
   virtual void put(int c) {
-    if (UNLIKELY(block_pos_ >= block_size_)) {
+    if (block_pos_ >= block_size_) {
       flushWrite();
     }
     block_data_[block_pos_++] = c;

@@ -95,7 +95,7 @@ size_t MemoryLZ::getMatchLen(byte* m1, byte* m2, byte* limit1) {
   byte* start = m1;
   while (m1 < limit1) {
     uint32_t diff = *reinterpret_cast<uint32_t*>(m1) ^ *reinterpret_cast<uint32_t*>(m2);
-    if (UNLIKELY(diff)) {
+    if (diff) {
       unsigned long idx = 0;
       // TODO: Fix _BitScanForward(&idx, diff);
       m1 += idx >> 3;
