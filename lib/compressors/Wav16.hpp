@@ -132,14 +132,12 @@ public:
   uint32_t processSample(TStream& stream, size_t context, size_t channel, uint32_t c = 0) {
     uint32_t code = 0;
     if (!kDecode) {
-      if (true) {
-        int high_bit = c >> 15;
-        check(high_bit <= 1);
-        ent.encodeBit(stream, high_bit);
-        if (high_bit) c = ~c;
-        c &= (1 << 15) - 1;
-        // 63608910
-      }
+      int high_bit = c >> 15;
+      check(high_bit <= 1);
+      ent.encodeBit(stream, high_bit);
+      if (high_bit) c = ~c;
+      c &= (1 << 15) - 1;
+      // 63608910
       code = c << (sizeof(uint32_t) * 8 - (15 - 0));
     }
     int ctx = 1;

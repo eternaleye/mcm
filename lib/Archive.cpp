@@ -43,7 +43,6 @@
 
 #include "Dict.hpp"                // for Dict::CodeWordSet, Dict::Filter, Dict
 #include "Filter.hpp"              // for Filter
-#include "Huffman.hpp"             // for Huffman::Code, Huffman, Huffman::Tree
 #include "ProgressMeter.hpp"       // for ProgressThread, AutoUpdater
 #include "Stream.hpp"              // for Stream, ReadMemoryStream, VerifyStream
 #include "WordCounter.hpp"         // for WordCount
@@ -51,6 +50,24 @@
 
 static const bool kTestFilter = false;
 static const size_t kSizePad = 10;
+
+// Helpers
+
+// Used by Archive.cpp, bin/mcm.cpp
+template <typename T>
+std::vector<T> ReadCSI(const std::string& file) {
+  std::ifstream fin(file.c_str());
+  std::vector<T> ret;
+  for (;;) {
+    T temp;
+    if (!(fin >> temp)) break;
+    char separator;
+    fin >> separator;
+    if (separator != ',') break;
+    ret.push_back(temp);
+  }
+  return ret;
+}
 
 template <typename Data, typename Perm>
 static void Permute(Data* out, const Data* in, const Perm* perm, size_t count) {
@@ -227,12 +244,7 @@ Filter* Archive::Algorithm::createFilter(Stream* stream, Analyzer* analyzer, Arc
             }
           }
           auto temp = code_words.codewords_;
-          if (true) {
-            Permute(&code_words.codewords_[0], &temp[0], archive.opt_vars_, code_words.num1_);
-          } else {
-            uint8_t perm0[] = { 2,3,29,4,22,10,8,7,9,11,12,18,13,14,1,5,17,23,21,0,24,25,26,20,19,6,27,16,15,28,30,31,32,33,35,34,37,36,38,39, };
-            Permute(&code_words.codewords_[0], &temp[0], perm0, code_words.num1_);
-          }
+          Permute(&code_words.codewords_[0], &temp[0], archive.opt_vars_, code_words.num1_);
           auto count2 = code_words.num2_ * 128;
           if (false) if (false) {
             Permute(&code_words.codewords_[code_words.num1_], &temp[code_words.num1_], archive.opt_vars_, count2);
@@ -276,18 +288,6 @@ Filter* Archive::Algorithm::createFilter(Stream* stream, Analyzer* analyzer, Arc
       }
       auto& freq = builder.GetFrequencies();
       dict_filter->AddCodeWords(code_words.GetCodeWords(), code_words.num1_, code_words.num2_, code_words.num3_, &freq, dict_codes.Count());
-      if (false) {
-        std::cerr << std::endl << "Before " << freq.Sum() << std::endl;
-        auto* tree = Huffman::Tree<uint32_t>::BuildPackageMerge(freq.GetFrequencies(), 256, 16);
-        Huffman::Code codes[256];
-        tree->GetCodes(codes);
-        uint64_t total_bits = 0;
-        for (size_t i = 0; i < 256; ++i) {
-          std::cerr << i << " bits " << codes[i].length << " freq " << freq.GetFrequencies()[i] << std::endl;
-          total_bits += codes[i].length * freq.GetFrequencies()[i];
-        }
-        std::cerr << std::endl << "After " << freq.Sum() << " huff " << total_bits / CHAR_BIT << std::endl;
-      }
       dict_filter->SetFrequencies(freq);
       dict_filter->setOpt(opt_var);
       ret = dict_filter;
@@ -562,29 +562,6 @@ public:
     if (sext1 != sext2) return sext1 < sext2;
     auto fname1 = GetFileName(name1).second;
     auto fname2 = GetFileName(name2).second;
-    if (false) {
-      // Probably buggy.
-      if (!ext1.empty()) fname1 = fname1.substr(0, fname1.length() - ext1.length() - 1);
-      if (!ext2.empty()) fname2 = fname2.substr(0, fname2.length() - ext2.length() - 1);
-      if (isdigit(fname1.back()) && isdigit(fname2.back())) {
-        size_t d1 = fname1.length() - 1;
-        for (;d1 > 0 && isdigit(fname1[d1]);--d1);
-        size_t d2 = fname2.length() - 1;
-        for (;d2 > 0 && isdigit(fname2[d2]);--d2);
-        auto no_num1 = fname1.substr(0, d1 + 1);
-        auto no_num2 = fname2.substr(0, d2 + 1);
-        if (no_num1 != no_num2) return no_num1 < no_num2;
-        auto num1 = fname1.substr(d1 + 1);
-        auto num2 = fname2.substr(d2 + 1);
-        auto l1 = num1.length();
-        auto l2 = num2.length();
-        if (l1 > l2)
-          num2 = std::string(l1 - l2, '0') + num2;
-        else if (l1 < l2)
-          num1 = std::string(l2 - l1, '0') + num1;
-        if (num1 != num2) return num1 < num2;
-      }
-    }
     if (fname1 != fname2) return fname1 < fname2;
     return name1 < name2;
   }
@@ -625,110 +602,6 @@ private:
   std::chrono::high_resolution_clock::time_point start_;
   uint64_t add_bytes_;
   uint64_t add_files_;
-};
-
-struct DedupeFragment {
-  uint32_t src_file_;
-  uint64_t src_pos_;
-  uint32_t dest_file_;
-  uint64_t dest_pos_;
-  uint64_t len_;
-};
-
-class DedupeAnalyzer : public Analyzer {
-  static const size_t kBlockSize = 8 * KB;
-public:
-  DedupeAnalyzer(FileList* files) : files_(files) {
-  }
-  std::pair<uint64_t, uint64_t> confirmDedupe(Deduplicator::DedupEntry* e, Stream* stream, size_t file_idx, uint64_t pos) {
-    uint8_t file_block[kBlockSize];
-    uint8_t compare_block[kBlockSize];
-    uint64_t file_pos = e->offset_;
-    uint64_t compare_pos = pos;
-    Stream* file_stream;
-    File file;
-    auto orig_pos = stream->tellg();
-    uint64_t max_read = std::numeric_limits<uint64_t>::max();
-    if (e->file_idx_ == file_idx) {
-      if (file_pos >= compare_pos) {
-        return std::pair<uint64_t, uint64_t>(0u, 0u);
-      }
-      max_read = compare_pos - file_pos;
-      file_stream = stream;
-    } else {
-      auto& file_info = files_->at(e->file_idx_);
-      int err;
-      std::string file_name = file_info.getFullName();
-      if (err = file.open(file_name.c_str(), std::ios_base::in | std::ios_base::binary)) {
-        std::cerr << "Error opening: " << file_name << " (" << errstr(err) << ")" << std::endl;
-      }
-      file_stream = &file;
-    }
-    // Extend the match.
-    uint64_t len = 0;
-    for (;;) {
-      size_t cur_max = static_cast<size_t>(std::min(kBlockSize, max_read - len));
-      auto c1 = stream->readat(compare_pos + len, compare_block, cur_max);
-      auto c2 = file_stream->readat(file_pos + len, file_block, cur_max);
-      if (c1 == 0 || c2 == 0) break;
-      size_t cur_len;
-      bool match = true;
-      for (cur_len = 0; match && cur_len < c1 && cur_len < c2; ++cur_len) {
-        match = compare_block[cur_len] == file_block[cur_len];
-      }
-      len += cur_len;
-      if (!match) break;
-    }
-    // Extend backwards.
-    for (;;) {
-      // TODO: This is not correct.
-      auto pos0 = compare_pos >= kBlockSize ? compare_pos - kBlockSize : 0u;
-      auto pos1 = file_pos >= kBlockSize ? file_pos - kBlockSize : 0u;
-      auto c1 = stream->readat(pos0, compare_block, compare_pos - pos0);
-      auto c2 = file_stream->readat(pos1, file_block, file_pos - pos1);
-      size_t cur_len = 0;
-      for (;c1 != 0 && c2 != 0; ++cur_len) {
-        if (compare_block[c1 - 1] != file_block[c2 - 1]) {
-          break;
-        }
-        --c1;
-        --c2;
-      }
-      if (cur_len == 0) break;
-      compare_pos -= cur_len;
-      file_pos -= cur_len;
-      len += cur_len;
-    }
-    // Back to where we started.
-    stream->seekg(orig_pos);
-    file.close();
-    if (len < 1024) {
-      return std::pair<uint64_t, uint64_t>(0u, 0u);
-    }
-    // Write the dedupe fragment.
-    DedupeFragment frag;
-    frag.src_file_ = e->file_idx_;
-    frag.src_pos_ = file_pos;
-    frag.dest_file_ = file_idx;
-    frag.dest_pos_ = compare_pos;
-    frag.len_ = len;
-    dedupe_fragments_.push_back(frag);
-    return std::pair<uint64_t, uint64_t>(compare_pos, len);
-  }
-  void dump() {
-    uint64_t total_dedupe = 0;
-    for (auto& f : dedupe_fragments_) {
-      const auto& file1 = files_->at(f.src_file_);
-      const auto& file2 = files_->at(f.dest_file_);
-      std::cout << f.len_ << ":" << file1.getName() << "(" << f.src_pos_ << ")->" << file2.getName() << "(" << f.dest_pos_ << ")" << std::endl;
-      total_dedupe += f.len_;
-    }
-    std::cout << "Total dedupe " << prettySize(total_dedupe) << std::endl;
-  }
-
-private:
-  FileList* files_;
-  std::vector<DedupeFragment> dedupe_fragments_;
 };
 
 uint64_t Archive::compress(const std::vector<FileInfo>& in_files) {

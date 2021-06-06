@@ -50,7 +50,6 @@ size_t LZ16<MatchFinder>::compress(uint8_t* in, uint8_t* out, size_t count) {
   const uint8_t* limit = in + count;
   const uint8_t* in_ptr = in;
   uint8_t* out_ptr = out;
-  // uint8_t* buffer, size_t buffer_size, size_t min_match, size_t max_match
   MatchFinder mf(0xFFFFF, 0xFFFF + kMinMatch, in, count, kMinMatch, kMaxMatch);
   // Stats
   size_t short_offsets = 0, long_offsets = 0, len_bytes = 0, skip_bytes = 0, offset_bytes = 0;
@@ -60,14 +59,6 @@ size_t LZ16<MatchFinder>::compress(uint8_t* in, uint8_t* out, size_t count) {
     auto match = mf.FindNextMatch();
     assert(match.Pos() >= kMinMatch);
     auto non_match_len = mf.NonMatchLen();
-#if 0
-    if (kIsDebugBuild) {
-      assert(match.Pos() + match.Length() <= in_ptr - in + non_match_len);
-      for (size_t i = 0; i < match.Length(); ++i) {
-        assert(in_ptr - match.Pos() == in_ptr[i + non_match_len]);
-      }
-    }
-#endif
     do {
       size_t len = 0, pos = 0, nm_len = kMaxNonMatch;
       if (non_match_len <= kMaxNonMatch) {
@@ -131,20 +122,12 @@ void LZ16<MatchFinder>::decompress(uint8_t* in, uint8_t* out, size_t count) {
     ++in;
     uint32_t cur_len;
     cur_len = lens & 0xF; lens >>= 4;
-    // if (cur_len) {
     copy16bytes(out, in); in += cur_len; out += cur_len;
-    // }
     cur_len = lens; // & 0xF; lens >>= 4;
-#if 0
-    size_t have_len = cur_len != 0;
-    auto offset = *reinterpret_cast<uint16_t*>(in) & -have_len;
-    copy16bytes(out, out - offset); in += (have_len << 1); out += cur_len;
-#else
     if (cur_len) {
       auto offset = *reinterpret_cast<uint16_t*>(in);
       copy16bytes(out, out - offset - kMinMatch); in += 2; out += cur_len;
     }
-#endif
   } while (out < limit);
 }
 

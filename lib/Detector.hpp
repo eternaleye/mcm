@@ -38,7 +38,6 @@
 #include <cstdint>                // for uint8_t, uint64_t, uint32_t
 #include <cstdio>                 // for size_t, EOF
 
-#include "compressors/JPEG.hpp"   // for JPEGCompressor
 #include "compressors/Wav16.hpp"  // for Wav16
 
 #include "CyclicBuffer.hpp"       // for CyclicDeque, Window
@@ -372,9 +371,6 @@ public:
     if (buffer_size == 0) {
       return DetectedBlock(kProfileEOF, 0);
     }
-    if (false) {
-      return DetectedBlock(kProfileText, static_cast<uint32_t>(buffer_.Size()));
-    }
 
     size_t binary_len = 0;
     while (binary_len < buffer_size) {
@@ -391,9 +387,6 @@ public:
         OffsetBlock b;
         if (Wav16::Detect(last_word_, window, &b)) {
           saved_blocks_.push_back(DetectedBlock(kProfileWave16, b.len));
-          return DetectedBlock(kProfileBinary, b.offset);
-        } else if (JPEGCompressor::Detect(last_word_, window, &b)) {
-          saved_blocks_.push_back(DetectedBlock(kProfileBinary, b.len));
           return DetectedBlock(kProfileBinary, b.offset);
         }
         const uint8_t c = buffer_[pos];
@@ -442,18 +435,6 @@ public:
           } else {
             break;
           }
-        } else if (false) {
-          std::cerr << space_count << " " << text_score << "/" << text_len << " " << double(text_len) / double(text_score) << std::endl;
-          if (true) {
-            uint8_t buf[512];
-            char* bptr = reinterpret_cast<char*>(buf);
-            std::ofstream oft("binary.txt", std::ios_base::out | std::ios_base::binary);
-            for (size_t i = 0; i < text_len; ++i) {
-              char c = buffer_[binary_len + i];
-              oft.write(&c, 1);
-            }
-          }
-          int x = 2;
         }
       } 
       binary_len += text_len;
@@ -466,91 +447,15 @@ public:
   }
 };
 
-class Deduplicator {
-public:
-  class DedupEntry {
-  public:
-    DedupEntry() : file_idx_(0), hash_extra_(97654321), offset_(0) {
-    }
-    uint32_t file_idx_;  // File index.
-    uint32_t hash_extra_;  // High bits of the hash.
-    uint64_t offset_;  // Offset into the file to check against.
-  };
-
-  Deduplicator() {
-    power_ = 1;
-    for (size_t i = 0; i < kWindowSize; ++i) {
-      power_ = power_ * kPrime;
-    }
-    // power_ &= hash_mask_;
-  }
-  void init() {
-    hash_table_.clear();
-    hash_mask_ = 0x3FFFFF;
-    hash_table_.resize(hash_mask_ + 1);
-    resetPos();
-  }
-  DedupEntry* update(size_t file_idx, bool force_write = false) {
-    auto masked_hash = static_cast<size_t>(rolling_hash_) & hash_mask_;
-    uint32_t hash_extra = static_cast<uint32_t>(rolling_hash_ >> 32);
-    auto& h = hash_table_[masked_hash];
-    // if ((hash_extra & hash_mask_) <= (hash_mask_ >> kWindowBits)) {
-    DedupEntry* ret = nullptr;
-    if (h.hash_extra_ == hash_extra && (h.file_idx_ != file_idx || h.offset_ != pos_)) {
-      ret = &h;
-    } else if (force_write || (pos_ & kWindowMask) <= 0) {
-      h.offset_ = pos_;
-      h.file_idx_ = file_idx;
-      h.hash_extra_ = hash_extra;
-    }
-    return ret;
-  }
-  void addChar(uint8_t in_byte) {
-    auto& out_byte = window_[pos_++ & kWindowMask];
-    rolling_hash_ = rolling_hash_ * kPrime + in_byte - out_byte * power_;
-    out_byte = in_byte;
-  }
-  void resetPos() {
-    pos_ = 0;
-    for (auto& b : window_) b = 0;
-    rolling_hash_ = 0;
-  }
-  uint64_t getPos() const {
-    return pos_;
-  }
-
-private:
-  static const size_t kWindowBits = 16;
-  static const size_t kWindowSize = 1u << kWindowBits;
-  static const size_t kWindowMask = kWindowSize - 1;
-  static const size_t kPrime = 153191;
-
-  uint64_t pos_;
-  uint8_t window_[kWindowSize];
-  size_t hash_mask_;
-  uint64_t power_;
-  uint64_t rolling_hash_;
-  std::vector<DedupEntry> hash_table_;
-};
-
 // Detector analyzer, analyze a whole stream.
 class Analyzer {
 public:
-  static const bool kUseDedupe = false;
   typedef std::vector<Detector::DetectedBlock> Blocks;
 
-  // Pos / len.
-  virtual std::pair<uint64_t, uint64_t> confirmDedupe(Deduplicator::DedupEntry* e, Stream* stream, size_t file_idx, uint64_t pos) {
-    return std::pair<uint64_t, uint64_t>(0u, 0u);
-  }
   void analyze(Stream* stream, size_t file_idx = 0) {
     Detector detector(stream);
     detector.setOptVar(opt_var_);
     detector.init();
-    if (kUseDedupe) {
-      dedupe_.init();
-      dedupe_.resetPos();
-    }
     for (;;) {
     next_block:
       auto block = detector.detectBlock();
@@ -559,54 +464,6 @@ public:
       }
       for (size_t i = 0; i < block.length(); ++i) {
         auto c = detector.popChar();
-        if (kUseDedupe && c != EOF) {
-          dedupe_.addChar(c);
-        }
-        // If we are EOF, force update at the end of the file.
-        Deduplicator::DedupEntry* f = kUseDedupe ? dedupe_.update(file_idx, c == EOF) : nullptr;
-        // Deduplicator::DedupEntry* f = nullptr;
-        if (f != nullptr) {
-          auto old_pos = dedupe_.getPos();
-          auto p = confirmDedupe(f, stream, file_idx, old_pos);
-          auto dedupe_len = p.second;
-          if (dedupe_len > 0) {
-            auto new_pos = p.first;
-            check(new_pos <= old_pos);
-            uint64_t delta = old_pos - new_pos;
-            if (delta > 0) {
-              delta = delta;
-            }
-            auto orig_delta = delta;
-            // Remove any chars we saw in current block so far.
-            auto sub = std::min(delta, static_cast<uint64_t>(i + 1));
-            check(dedupe_len >= delta);
-            auto future_chars = dedupe_len - delta;
-            delta -= sub;
-            // Remove things from the "blocks" array until we are at the actual start.
-            check(delta <= dedupe_len);
-            while (delta > 0) {
-              check(!blocks_.empty());
-              if (blocks_.back().profile() == Detector::kProfileSkip) break;
-              auto len = blocks_.back().length();
-              auto sub = std::min(len, delta);
-              if (len - sub > 0) {
-                blocks_.back().setLength(len - sub);  // Removed part of the block.
-              } else {
-                blocks_.pop_back();  // Removed whole block.
-              }
-              delta -= sub;
-            }
-            // Add skip block for how many bytes were deduped.
-            blocks_.push_back(Detector::DetectedBlock(Detector::kProfileSkip, dedupe_len));
-            for (uint64_t j = 1; j < future_chars; ++j) {
-              int c = detector.popChar();
-              dedupe_.addChar(c);
-              dedupe_.update(file_idx);
-              check(c != EOF);
-            }
-            goto next_block;
-          }
-        }
         if (c == EOF) {
           block.setLength(i);
           break;
@@ -665,7 +522,6 @@ public:
 private:
   Blocks blocks_;
   Dict::Builder dict_builder_;
-  Deduplicator dedupe_;
   size_t opt_var_;
 };
 

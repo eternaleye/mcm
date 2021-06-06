@@ -35,56 +35,6 @@
 #include "Stream.hpp"             // for WriteMemoryStream, ReadMemoryStream
 #include "Util.hpp"               // for MB
 
-class CompressionJob {
-public:
-  CompressionJob() {}
-  virtual ~CompressionJob() {}
-  double getCompressionRatio() const {
-    if (!getInBytes()) {
-      return 1;
-    }
-    return static_cast<double>(getOutBytes()) / static_cast<double>(getInBytes());
-  }
-
-  virtual bool isDone() const = 0;
-  virtual uint64_t getInBytes() const = 0;
-  virtual uint64_t getOutBytes() const = 0;
-};
-
-class MultiCompressionJob : public CompressionJob {
-public:
-  MultiCompressionJob() {}
-  virtual ~MultiCompressionJob() {}
-  void addJob(CompressionJob* job) {
-    jobs_.push_back(job);
-  }
-  virtual bool isDone() const {
-    for (CompressionJob* job : jobs_) {
-      if (!job->isDone()) {
-        return false;
-      }
-    }
-    return true;
-  }
-  virtual uint64_t getInBytes() const {
-    uint64_t sum = 0;
-    for (CompressionJob* job : jobs_) {
-      sum += job->getInBytes();
-    }
-    return sum;
-  }
-  virtual uint64_t getOutBytes() const {
-    uint64_t sum = 0;
-    for (CompressionJob* job : jobs_) {
-      sum += job->getOutBytes();
-    }
-    return sum;
-  }
-
-private:
-  std::vector<CompressionJob*> jobs_;
-};
-
 enum class CompressorType : int {
   kTypeStore,
   kTypeWav16,
@@ -110,31 +60,7 @@ public:
   virtual void decompress(Stream* in, Stream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF);
 };
 
-template <typename T>
-class MemoryStreamWrapper : public MemoryCompressor {
-  T compressor;
-public:
-  // Can't know.
-  virtual size_t getMaxExpansion(size_t in_size) {
-    return in_size * 3 / 2;
-  }
-
-  virtual uint32_t compressBytes(uint8_t* in, uint8_t* out, size_t count) {
-    WriteMemoryStream wms(out);
-    ReadMemoryStream rms(in, in + count);
-    compressor.compress(rms, wms);
-    return wms.tellp();
-  }
-
-  virtual void decompressBytes(uint8_t* in, uint8_t* out, size_t count) {
-    WriteMemoryStream wms(out);
-    ReadMemoryStream rms(in, in + count);
-    compressor.decompress(rms, wms);
-  }
-};
-
 class Store : public Compressor {
-  static constexpr bool kReorder = false;
 public:
   Store();
   virtual void compress(Stream* in, Stream* out, uint64_t count);
@@ -142,21 +68,6 @@ public:
 private:
   uint8_t transform_[256];
   uint8_t reverse_[256];
-};
-
-class MemCopyCompressor : public MemoryCompressor {
-public:
-  size_t getMaxExpansion(size_t in_size);
-  size_t compress(uint8_t* in, uint8_t* out, size_t count);
-  void decompress(uint8_t* in, uint8_t* out, size_t count);
-};
-
-class BitStreamCompressor : public MemoryCompressor {
-  static const uint32_t kBits = 8;
-public:
-  size_t getMaxExpansion(size_t in_size);
-  size_t compressBytes(uint8_t* in, uint8_t* out, size_t count);
-  void decompressBytes(uint8_t* in, uint8_t* out, size_t count);
 };
 
 #endif

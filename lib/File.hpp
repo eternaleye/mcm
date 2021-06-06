@@ -294,38 +294,6 @@ public:
   }
 };
 
-// Used to mirror data within a file.
-class FileMirror {
-  bool is_dirty_;
-  uint64_t offset_;
-public:
-  // Update the file if it is dirty.
-  void update() {
-    if (isDirty()) {
-      write();
-      setDirty(true);
-    }
-  }
-  // Read the corresponding data from the file.
-  virtual void write() {
-  }
-  // Read the corresponding data from the file.
-  virtual void read() {
-  }
-  void setDirty(bool dirty) {
-    is_dirty_ = dirty;
-  }
-  bool isDirty() const {
-    return is_dirty_;
-  }
-  void setOffset(uint64_t offset) {
-    offset_ = offset;
-  }
-  uint64_t getOffset() const {
-    return offset_;
-  }
-};
-
 // FileSegmentStream is an advanced stream which reads / writes from arbitrary sections from multiple files.
 class FileSegmentStream : public Stream {
 public:
@@ -471,65 +439,6 @@ private:
       }
     }
   }
-};
-
-class FileManager {
-public:
-  class CachedFile {
-  public:
-    std::string name;
-    std::ios_base::open_mode mode;
-    File file;
-    uint32_t count = 0;
-
-    File* getFile() { return &file; }
-    const std::string& getName() const { return name; }
-  };
-
-  // Clean up.
-  CachedFile* open(const std::string& name, std::ios_base::open_mode mode = std::ios_base::binary) {
-    CachedFile* ret = nullptr;
-    lock.lock();
-    auto it = files.find(name);
-    if (it == files.end()) {
-      ret = files[name] = new CachedFile;
-      ret->name = name;
-      ret->file.open(name.c_str(), mode);
-      ret->mode = mode;
-    } else {
-      // Make sure that our modes match.
-      // assert(it->mode == mode);
-    }
-    ++ret->count;
-    lock.unlock();
-    return ret;
-  }
-
-  void close_file(CachedFile*& file) {
-    bool delete_file = false;
-    lock.lock();
-    if (!--file->count) {
-      auto it = files.find(file->getName());
-      assert(it != files.end());
-      files.erase(it);
-      delete_file = true;
-    }
-    file = nullptr;
-    lock.unlock();
-    if (delete_file) {
-      delete file;
-    }
-  }
-
-  virtual ~FileManager() {
-    while (!files.empty()) {
-      close_file(files.begin()->second);
-    }
-  }
-
-private:
-  std::map<std::string, CachedFile*> files;
-  std::mutex lock;
 };
 
 inline WriteStream& operator << (WriteStream& stream, uint8_t c) {

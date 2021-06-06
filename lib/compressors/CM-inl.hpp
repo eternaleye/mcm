@@ -61,21 +61,12 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     size_t idx = 0;
     text_profile_ = CMProfile();
 
-    if (false) {
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder1);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelSpecialChar);
-    } else {
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder3);
-      if (kInputs > idx++) text_profile_.EnableModel(kModelOrder5);
-    }
+    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder4);
+    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder2);
+    if (kInputs > idx++) text_profile_.EnableModel(kModelBracket);
+    if (kInputs > idx++) text_profile_.EnableModel(kModelInterval);
+    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder3);
+    if (kInputs > idx++) text_profile_.EnableModel(kModelOrder5);
     if (kInputs > idx++) text_profile_.EnableModel(kModelWord1);
     if (kInputs > idx++) text_profile_.EnableModel(kModelInterval2);
     if (kInputs > idx++) text_profile_.EnableModel(kModelOrder0);
@@ -93,21 +84,12 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     size_t idx = 0;
     text_match_profile_ = CMProfile();
 
-    if (false) {
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder1);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
-    } else {
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder7);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
-      if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
-    }
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder4);
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelBracket);
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder7);
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelInterval);
+    if (kInputs > idx++) text_match_profile_.EnableModel(kModelSpecialChar);
     if (kInputs > idx++) text_match_profile_.EnableModel(kModelWord1);
     if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder5);
     if (kInputs > idx++) text_match_profile_.EnableModel(kModelOrder2);
@@ -179,7 +161,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
   for (auto& c : mixer_text_learn_) c = 9;
   for (auto& c : mixer_binary_learn_) c = 7;
   size_t zero[12] = {};
-  if (true) {
+  {
     size_t* tl = zero;
     mixer_text_learn_[kModelOrder0] = 24 + tl[11];
     mixer_text_learn_[kModelOrder1] = 24 + tl[9];
@@ -194,8 +176,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     mixer_text_learn_[kModelWord1] = 20 + tl[5];
     mixer_text_learn_[kModelSpecialChar] = 13 + tl[8];
   }
-#if 1
-  if (true) {
+  {
     size_t tl[] = {4,2,2,1,0,2,2,3,0,1,0,0,};
     // 4,3,4,3,2,3,2,3,1,0,0,0,
     mixer_binary_learn_[kModelOrder0] = 6 + tl[0];
@@ -208,20 +189,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
     mixer_binary_learn_[kModelSparse3] = 6 + tl[7];
     mixer_binary_learn_[kModelSparse4] = 6 + tl[8];
     mixer_binary_learn_[kModelInterval2] = 6 + tl[9];
-  } else {
-    size_t* tl = zero;
-    mixer_binary_learn_[kModelOrder0] = 10 + tl[0];
-    mixer_binary_learn_[kModelOrder1] = 9 + tl[1];
-    mixer_binary_learn_[kModelOrder2] = 10 + tl[2];
-    mixer_binary_learn_[kModelOrder3] = 9 + tl[3];
-    mixer_binary_learn_[kModelOrder4] = 8 + tl[4];
-    mixer_binary_learn_[kModelSparse34] = 9 + tl[5];
-    mixer_binary_learn_[kModelSparse2] = 8 + tl[6];
-    mixer_binary_learn_[kModelSparse3] = 9 + tl[7];
-    mixer_binary_learn_[kModelSparse4] = 7 + tl[8];
-    mixer_binary_learn_[kModelInterval2] = 6 + tl[9];
   }
-#endif
   for (auto& s : mixer_skip_) s = 0;
 
   NSStateMap<kShift> sm;
@@ -270,15 +238,13 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
   uint8_t text_mask[] = { 15,0,0,2,15,0,8,3,2,12,13,1,3,0,7,9,12,0,0,0,0,0,0,2,0,6,0,0,9,0,0,0,12,7,14,9,7,11,4,11,10,4,9,14,9,8,7,6,5,5,5,5,5,5,5,5,5,5,14,9,2,15,13,4,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,2,4,4,4,4,4,4,5,4,4,3,3,10,1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, };
   uint8_t text_mask2[] = { 4,2,0,7,2,0,13,0,0,5,4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,11,2,10,8,5,6,3,9,14,7,7,3,1,5,15,10,0,0,0,0,0,0,0,0,0,0,1,13,13,8,7,7,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,15,6,12,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,12,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, };
   reorder_.Copy(text_reorder_);
-  if (true) {
-    std::ofstream of("of.txt");
-    for (size_t i = 0; i < 256; ++i) of << (size_t)reorder_.Backward(i) << ",";
-    of << std::endl;
-    for (size_t i = 0; i < 256; ++i) {
-      int c = reorder_.Backward(i);
-      of << i << " " << static_cast<int>(small_text_mask[c]) << "," << static_cast<int>(text_mask[c]) << " '";
-      of << (isspace(c) ? ' ' : static_cast<char>(c)) << "' ascii=" << (size_t)c << std::endl;
-    }
+  std::ofstream of("of.txt");
+  for (size_t i = 0; i < 256; ++i) of << (size_t)reorder_.Backward(i) << ",";
+  of << std::endl;
+  for (size_t i = 0; i < 256; ++i) {
+    int c = reorder_.Backward(i);
+    of << i << " " << static_cast<int>(small_text_mask[c]) << "," << static_cast<int>(text_mask[c]) << " '";
+    of << (isspace(c) ? ' ' : static_cast<char>(c)) << "' ascii=" << (size_t)c << std::endl;
   }
   for (size_t i = 0; i < 256; ++i) {
     // if (opts_) small_text_mask[i] = opts_[i];
@@ -353,20 +319,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
   SetDataProfile(data_profile_);
   last_bytes_ = 0;
   SetUpCtxState();
-  // Statistics
-  if (kStatistics) {
-    for (auto& c : mixer_skip_) c = 0;
-    other_count_ = match_count_ = non_match_count_ = 0;
-    const auto end = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<double, std::ratio<1>> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
-    std::cout << "Setup took: " << time.count() << "s" << std::endl;
-    lzp_bit_match_bytes_ = lzp_bit_miss_bytes_ = lzp_miss_bytes_ = normal_bytes_ = 0;
-    for (auto& len : match_hits_) len = 0;
-    for (auto& len : match_miss_) len = 0;
-    miss_len_ = 0;
-    for (auto& c : miss_count_) c = 0;
-    fast_bytes_ = 0;
-  }
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
@@ -382,18 +334,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Strea
   }
   init();
   ent = Range7();
-  if (use_huffman) {
-    const auto start = std::chrono::high_resolution_clock::now();
-    size_t freqs[256] = { 1 };
-    std::cout << "Building huffman tree" << std::endl;
-    Huffman::HuffTree* tree = Huffman::Tree<uint32_t>::BuildPackageMerge(freqs, 256, huffman_len_limit);
-    tree->PrintRatio(std::cout, "LL");
-    Huffman::writeTree(ent, sout, tree, 256, huffman_len_limit);
-    huff.build(tree);
-    const auto end = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<double, std::milli> time = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(end - start);
-    std::cout << "Building huffman tree took: " << time.count() << "ms" << std::endl;
-  }
   for (;max_count > 0; --max_count) {
     uint32_t c;
     if (!force_profile_) {
@@ -423,91 +363,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Strea
       std::cout << std::endl << less64 << "/" << total << " = " << double(less64) / double(total) << std::endl;
     }
   }
-
-  if (kStatistics) {
-    if (!kFastStats) {
-      std::ofstream fout("probs.txt");
-      for (size_t i = 0; i < kInputs; ++i) {
-        fout << "{";
-        for (uint32_t j = 0; j < 256; ++j) fout << probs_[i].GetP(j) << ",";
-        fout << "}," << std::endl;
-      }
-      // Print average weights so that we find out which contexts are good and which are not.
-      for (size_t cur_p = 0; cur_p < static_cast<uint32_t>(kProfileCount); ++cur_p) {
-        auto cur_profile = static_cast<DataProfile>(cur_p);
-        CMMixer* mixers = mixers_[0].GetMixer();
-        std::cout << "Mixer weights for profile " << cur_profile << std::endl;
-        for (size_t i = 0; i < 256; ++i) {
-          double weights[kInputs + 2] = { 0 };
-          double lzp_weights[kInputs + 2] = { 0 };
-          size_t count = 0, lzp_count = 0;
-          for (size_t j = 0; j < 256; ++j) {
-            // Only mixers which have been used at least a few times.
-            auto& m = mixers[i * 256 + j];
-            if (m.GetLearn() < 30) {
-              if (j != 0) {
-                for (size_t k = 0; k < m.NumWeights(); ++k) {
-                  // weights[k] += double(m.GetWeight(k)) / double(1 << m.shift());
-                }
-                ++count;
-              } else {
-                for (size_t k = 0; k < m.NumWeights(); ++k) {
-                  // lzp_weights[k] += double(m.GetWeight(k)) / double(1 << m.shift());
-                }
-                ++lzp_count;
-              }
-            }
-          }
-          if (count != 0) {
-            std::cout << "Weights " << i << ":";
-            for (auto& w : weights) std::cout << w / double(count) << " ";
-            std::cout << std::endl;
-          }
-          if (lzp_count) {
-            std::cout << "LZP " << i << ":";
-            for (auto& w : lzp_weights) std::cout << w << " ";
-            std::cout << std::endl;
-          }
-        }
-      }
-      // State count.
-      size_t z = 0, nz = 0;
-      for (size_t i = 0;i <= hash_mask_;++i) {
-        ++(hash_table_[i] != 0 ? nz : z);
-      }
-      std::cout << "zero=" << z << " nonzero=" << nz << std::endl;
-    }
-    if (!force_profile_) {
-      detector.dumpInfo();
-    }
-    std::cout << "CMed bytes=" << formatNumber((mixer_skip_[0] + mixer_skip_[1]) / 8)
-      << " mix skip=" << formatNumber(mixer_skip_[0])
-      << " mix nonskip=" << formatNumber(mixer_skip_[1]) << std::endl;
-    std::cout << "match=" << formatNumber(match_count_)
-      << " matchfail=" << formatNumber(non_match_count_)
-      << " nonmatch=" << formatNumber(other_count_) << std::endl;
-    if (!kFastStats) {
-      if (false)
-        for (size_t i = 0; i < kMaxMatch; ++i) {
-          const size_t t = match_hits_[i] + match_miss_[i];
-          if (t != 0) {
-            std::cout << i << ":" << match_hits_[i] << "/" << match_miss_[i] << " = " << static_cast<double>(match_hits_[i]) / t << std::endl;
-          }
-        }
-      uint64_t miss_tot;
-      for (size_t i = 0; i < kMaxMiss;++i) {
-        if (miss_count_[i] != 0) std::cout << "Misses " << i << " " << miss_count_[i] + miss_tot << std::endl;
-        miss_tot += miss_count_[i];
-      }
-    }
-    std::cout << "Fast bytes " << fast_bytes_ << std::endl;
-    if (cur_profile_.MinLZPLen() > 0) {
-      std::cout << "lzp_bit_size=" << formatNumber(lzp_bit_match_bytes_)
-        << " lzp_bit_miss_bytes=" << formatNumber(lzp_bit_miss_bytes_)
-        << " lzp_miss_bytes=" << formatNumber(lzp_miss_bytes_)
-        << " lzp_normal_bytes=" << formatNumber(normal_bytes_) << std::endl;
-    }
-  }
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
@@ -521,11 +376,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in_stream, Str
   }
   init();
   ent.initDecoder(sin);
-  if (use_huffman) {
-    // auto* tree = Huffman::readTree(ent, sin, 256, huffman_len_limit);
-    // huff.build(tree);
-    // delete tree;
-  }
   for (; max_count > 0; --max_count) {
     if (!force_profile_) {
       auto new_profile = detector.detect();
@@ -599,10 +449,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::SetStates(const uint32_t* remap) 
   
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
 inline void CM<kInputs, kUseSSE, HistoryType>::SetUpCtxState() {
-  if (false) {
-    OptimalCtxState();
-    return;
-  }
   uint32_t bits[256] = {256};
   uint32_t ctx_map[256] = {};
   bits[0] = 0;

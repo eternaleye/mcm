@@ -37,7 +37,7 @@
 #include <cstdint>     // for uint8_t, uint32_t, int64_t
 
 #include "Memory.hpp"  // for MemMap
-#include "Util.hpp"    // for FrequencyCounter, MakeUpperCase, IsUpperCase
+#include "Util.hpp"    // for FrequencyCounter, MakeUpperCase
 
 // Word capital conversion.
 enum WordCC {

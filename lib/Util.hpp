@@ -65,7 +65,7 @@ inline void Prefetch(const void* ptr) {
 #endif
 }
 
-// Used by IsWordChar, MakeLowerCase, WordCounter.hpp
+// Used by IsWordChar, MakeLowerCase,
 inline static bool IsUpperCase(int c) {
   return c >= 'A' && c <= 'Z';
 }
@@ -96,7 +96,7 @@ inline static int MakeLowerCase(int c) {
   return c;
 }
 
-// Used by WordModel.hpp, MatchFinder.hpp, CM.hpp, LZ.hpp 
+// Used by WordModel.hpp, MatchFinder.hpp, CM.hpp
 // https://blog.regehr.org/archives/1063
 inline uint32_t rotate_left(uint32_t h, uint32_t bits) {
   assert(bits < sizeof(h) * char_bit);
@@ -138,23 +138,7 @@ void RunUtilTests();
 // TODO<C++17>: Use std::filesystem
 bool IsAbsolutePath(const std::string& path);
 
-// Used by Archive.cpp, bin/mcm.cpp
-template <typename T>
-std::vector<T> ReadCSI(const std::string& file) {
-  std::ifstream fin(file.c_str());
-  std::vector<T> ret;
-  for (;;) {
-    T temp;
-    if (!(fin >> temp)) break;
-    char separator;
-    fin >> separator;
-    if (separator != ',') break;
-    ret.push_back(temp);
-  }
-  return ret;
-}
-
-// Used by JPEG.hpp, Wav16.hpp
+// Wav16.hpp
 static inline constexpr uint32_t MakeWord(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   return (a << 24) | (b << 16) | (c << 8) | (d << 0);
 }
@@ -165,7 +149,7 @@ enum Endian {
   kEndianBig,
 };
 
-// Used by JPEG.hpp, Wav16.hpp, Detector.hpp
+// Used by Wav16.hpp, Detector.hpp
 struct OffsetBlock {
   size_t offset;
   size_t len;

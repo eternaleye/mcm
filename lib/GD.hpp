@@ -31,25 +31,6 @@
 #include <cmath>     // for log2f
 #include <cstdlib>   // for size_t, abs
 
-class SquaredPredictor {
-public:
-  template <typename Error>
-  Error OptimizeError(Error error) {
-    return error;
-  }
-
-  template <typename Error, typename Predictor, typename Input>
-  Error Cost(const Predictor& predictor, const Input* inputs, Input actual) const {
-    const Error delta = predictor.Predict(inputs) - actual;
-    return delta * delta;
-  }
-
-  template <typename Error, typename Delta, typename Input>
-  void Update(const Input input, Delta* delta, Error error) const {
-    *delta += error * input;
-  }
-};
-
 class LogPredictor {
 public:
   template <typename Error>
@@ -144,8 +125,4 @@ private:
   PredictorFunc f_;
 };
 
-template <typename T>
-inline void GradientDescent(T* samples, size_t num_samples, size_t num_weights) {
-}
-  
 #endif

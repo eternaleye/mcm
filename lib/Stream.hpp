@@ -163,6 +163,7 @@ public:
     }
     return buffer[buffer_pos++];
   }
+  // Range7 is being icky
   void put(int c) {
     throw libmcm::unimplemented_error(__FUNCTION__);
   }
@@ -206,6 +207,7 @@ public:
     }
     *(ptr_++) = c;
   }
+  // Range7 is being icky
   int get() {
     throw libmcm::unimplemented_error(__FUNCTION__);
   }
@@ -220,71 +222,6 @@ private:
   Stream* stream_;
   uint8_t buffer_[kBufferSize];
   uint8_t* ptr_;
-};
-
-template <const bool kLazy = true>
-class MemoryBitStream {
-  uint8_t* __restrict data_;
-  uint32_t buffer_;
-  uint32_t bits_;
-  static const uint32_t kBitsPerSizeT = sizeof(uint32_t) * CHAR_BIT;
-public:
-  inline MemoryBitStream(uint8_t* data) : data_(data), buffer_(0), bits_(0) {
-  }
-
-  uint8_t* getData() {
-    return data_;
-  }
-
-  inline void tryReadByte() {
-    if (bits_ <= kBitsPerSizeT - CHAR_BIT) {
-      readByte();
-    }
-  }
-
-  inline void readByte() {
-    buffer_ = (buffer_ << CHAR_BIT) | *data_++;
-    bits_ += CHAR_BIT;
-  }
-
-  inline uint32_t readBits(uint32_t bits) {
-    if (kLazy) {
-      while (bits_ < bits) {
-        readByte();
-      }
-    } else {
-      // This might be slower
-      tryReadByte();
-      tryReadByte();
-      tryReadByte();
-    }
-    bits_ -= bits;
-    uint32_t ret = buffer_ >> bits_;
-    buffer_ -= ret << bits_;
-    return ret;
-  }
-
-  inline void flushByte() {
-    bits_ -= CHAR_BIT;
-    uint32_t byte = buffer_ >> bits_;
-    buffer_ -= byte << bits_;
-    *data_++ = byte;
-  }
-
-  void flush() {
-    while (bits_ > CHAR_BIT) {
-      flushByte();
-    }
-    *data_++ = buffer_;
-  }
-
-  inline void writeBits(uint32_t data, uint32_t bits) {
-    bits_ += bits;
-    buffer_ = (buffer_ << bits) | data;
-    while (bits_ >= CHAR_BIT) {
-      flushByte();
-    }
-  }
 };
 
 class VerifyStream : public WriteStream {

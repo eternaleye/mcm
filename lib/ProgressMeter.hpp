@@ -105,69 +105,6 @@ public:
   }
 };
 
-// DEPRECIATED
-class ProgressStream : public Stream {
-  static const size_t kUpdateInterval = 512 * KB;
-public:
-  ProgressStream(Stream* in_stream, Stream* out_stream, bool encode = true)
-    : in_stream_(in_stream), out_stream_(out_stream), meter_(encode), update_count_(0) {
-  }
-  virtual ~ProgressStream() {}
-  virtual int get() {
-    uint8_t b;
-    if (read(&b, 1) == 0) {
-      return EOF;
-    }
-    return b;
-  }
-  virtual size_t read(uint8_t* buf, size_t n) {
-    size_t ret = in_stream_->read(buf, n);
-    update_count_ += ret;
-    if (update_count_ > kUpdateInterval) {
-      update_count_ -= kUpdateInterval;
-      meter_.printRatio(out_stream_->tellp(), in_stream_->tellg(), "");
-    }
-    return ret;
-  }
-  virtual void put(int c) {
-    uint8_t b = c;
-    write(&b, 1);
-  }
-  virtual void write(const uint8_t* buf, size_t n) {
-    out_stream_->write(buf, n);
-    addCount(n);
-  }
-  void addCount(size_t delta) {
-    update_count_ += delta;
-    if (update_count_ > kUpdateInterval) {
-      update_count_ -= kUpdateInterval;
-      size_t comp_size = out_stream_->tellp(), other_size = in_stream_->tellg();
-      if (!meter_.isEncode()) {
-        std::swap(comp_size, other_size);
-      }
-      meter_.printRatio(comp_size, other_size, "");
-    }
-  }
-  virtual uint64_t tellg() const {
-    return meter_.isEncode() ? in_stream_->tellg() : out_stream_->tellp();
-  }
-  virtual uint64_t tellp() const {
-    return meter_.isEncode() ? in_stream_->tellg() : out_stream_->tellp();
-  }
-  virtual void seekg(uint64_t pos) {
-    meter_.isEncode() ? in_stream_->seekg(pos) : out_stream_->seekp(pos);
-  }
-  virtual void seekp(uint64_t pos) {
-    meter_.isEncode() ? in_stream_->seekg(pos) : out_stream_->seekp(pos);
-  }
-
-private:
-  Stream* const in_stream_;
-  Stream* const out_stream_;
-  ProgressMeter meter_;
-  uint64_t update_count_;
-};
-
 class AutoUpdater {
 public:
   AutoUpdater(uintptr_t interval = 250)

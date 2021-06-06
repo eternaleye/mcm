@@ -36,8 +36,6 @@
 #include "Compressor.hpp"    // for Compressor
 #include "CyclicBuffer.hpp"  // for CyclicBuffer
 #include "Detector.hpp"      // for Detector, Detector::Profile, Detector::k...
-#include "Huffman.hpp"       // for Huffman, Huffman::Code
-#include "Log.hpp"           // for ss_table
 #include "MatchModel.hpp"    // for MatchModel
 #include "Memory.hpp"        // for MemMap
 #include "Mixer.hpp"         // for Mixer, MixerArray
@@ -47,9 +45,94 @@
 #include "Reorder.hpp"       // for ReorderMap
 #include "SSE.hpp"           // for SSE
 #include "Util.hpp"          // for Clamp, Prefetch, dcheck
-#include "WordModel.hpp"     // for DictXMLModel, WordModel, WordModel::kMaxLen
+#include "WordModel.hpp"     // for DictXMLModel, WordModel::kMaxLen
 
 class Stream;
+
+// Squash - stretch table
+template <typename T, int denom, int minInt, int maxInt, int FP>
+struct ss_table {
+  static const int total = maxInt - minInt;
+  static_assert((total & (total - 1)) == 0, "must be power of 2");
+  T stretch_table_[denom];
+  static const size_t kFastTableMask = 8 * total - 1;
+  T squash_table_fast_[kFastTableMask + 1];
+public:
+  // probability = p / Denom		
+  void build(size_t* opts) {
+    T squash_table_[total];
+    T* squash_ptr_ = &squash_table_[0 - minInt];
+    // From paq9a
+    const size_t num_stems = 32 + 1;
+    int stems[num_stems] = {
+      1,2,4,6,19,25,38,71,82,128,210,323,497,778,1142,1526,
+      // 15 3 8 0 3 0 0 0 0 0 0 0 0 0 0 0
+      // 1,1,2,2,3,4,5,6,11,19,20,20,27,31,42,53,61,82,93,107,161,196,258,314,426,486,684,810,1048,1246,1521,1724,
+      // 1,1,2,3,4,5,6,13,19,22,25,32,38,55,71,77,82,105,128,169,210,267,323,410,497,638,778,960,1142,1334,1526,1787,
+      2047,
+    };
+    for (int i = num_stems / 2 + 1; i < num_stems; ++i) {
+      stems[i] = 4096 - stems[num_stems - 1 - i];
+    }
+    // Interpolate between stems.
+    const int stem_divisor = total / (num_stems - 1);
+    for (int i = minInt; i < maxInt; ++i) {
+      const int pos = i - minInt;
+      const int stem_idx = pos / stem_divisor;
+      const int stem_frac = pos % stem_divisor;
+      squash_table_[pos] =
+        (stems[stem_idx] * (stem_divisor - stem_frac) + stems[stem_idx + 1] * stem_frac + stem_divisor / 2) / stem_divisor;
+      squash_table_[pos] = Clamp(squash_table_[pos], 1, 4095);
+    }
+    int pi = 0;
+    // Inverse squash function.
+    for (int x = minInt; x < maxInt; ++x) {
+      int i = squash_ptr_[x];
+      squash_ptr_[x] = Clamp(squash_ptr_[x], 1, 4095);
+      for (int j = pi; j < i; ++j) {
+        stretch_table_[j] = x;
+      }
+      pi = i;
+    }
+    for (int x = pi; x < total; ++x) {
+      stretch_table_[x] = 2047;
+    }
+    for (int i = 0; i <= kFastTableMask; ++i) {
+      int p = i;
+      if (p >= kFastTableMask / 2) p = i - static_cast<int>(kFastTableMask + 1);
+      if (p <= minInt) p = 1;
+      else if (p >= maxInt) p = denom - 1;
+      else p = squash_ptr_[p];
+      squash_table_fast_[i] = p;
+    }
+  }
+
+  const T* getStretchPtr() const {
+    return stretch_table_;
+  }
+
+  // 0 <= p < denom
+  inline int st(uint32_t p) const {
+    return stretch_table_[p];
+  }
+
+  // minInt <= p < maxInt
+  inline uint32_t sq(int p) const {
+    if (p <= minInt) return 1;
+    if (p >= maxInt) return denom - 1;
+    return sqfast(p);
+  }
+
+  inline uint32_t squnsafe(int p) const {
+    dcheck(p >= minInt);
+    dcheck(p < maxInt);
+    return sqfast(p);
+  }
+
+  inline uint32_t sqfast(int p) const {
+    return squash_table_fast_[static_cast<uint32_t>(p) & kFastTableMask];
+  }
+};
 
 namespace cm {
   // Flags for which models are enabled.
@@ -230,7 +313,6 @@ namespace cm {
     };
 
     // Flags
-    static const bool kStatistics = false;
     static const bool kFastStats = true;
     static const bool kFixedProbs = false;
     static const bool kUseLZP = true;
@@ -254,8 +336,6 @@ namespace cm {
     typedef fastBitModel<int, kShift, 9, 30> HPStationaryModel;
 
     // Word model
-    // XMLWordModel word_model_;
-    // WordModel word_model_;
     DictXMLModel word_model_;
     size_t word_model_ctx_map_[WordModel::kMaxLen + 1];
 
@@ -337,9 +417,7 @@ namespace cm {
     uint8_t state_trans_[kNumStates][2];
 
     // Huffman preprocessing.
-    static const bool use_huffman = false;
     static const uint32_t huffman_len_limit = 16;
-    Huffman huff;
 
     // If force profile is true then we dont use a detector.
     bool force_profile_;
@@ -381,9 +459,7 @@ namespace cm {
     // SSE
     SSE<kShift> sse_;
     SSE<kShift> sse2_;
-    // SSE<kShift> sse3_;
     SSE<kShift> sse3_;
-    // MixSSE<kShift> sse3_;
     // APM2 sse3_;
     size_t sse_ctx_;
     size_t mixer_sse_ctx_;
@@ -475,16 +551,7 @@ namespace cm {
       auto mm_len = match_model_.getLength();
       if (current_interval_map_ == binary_interval_map_) {
         mixer_ctx = interval_model_ & interval_mixer_mask_;
-        // mixer_ctx = last_bytes_ & 0xFF;
-        if (false) {
-          mixer_ctx = (mixer_ctx << 2);
-          // mixer_ctx |= (mm_len >= 0) + (mm_len >= match_model_.kMinMatch);
-          mixer_ctx |= (mm_len > 0) +
-            (mm_len >= match_model_.kMinMatch + 1) + 
-					  (mm_len >= match_model_.kMinMatch + 4);
-        } else {
-          mixer_ctx = (mixer_ctx << 1) + (mm_len > 0);
-        }
+        mixer_ctx = (mixer_ctx << 1) + (mm_len > 0);
       } else {
         const size_t current_interval = small_interval_model_ & interval_mixer_mask_;
         mixer_ctx = current_interval;
@@ -639,7 +706,7 @@ namespace cm {
 						}
 					}
 				}
-				else if (true) {
+				else {
 					p = (p * 1 + sse3_.p(stp + kMaxValue / 2, (last_bytes_ & 0xFF) * 256 + mixer_ctx) * 15) / 16;
 					p += p == 0;
 					// mixer_p = p;
@@ -699,7 +766,6 @@ namespace cm {
 				if (kBitType != kBitTypeLZP) {
 					match_model_.UpdateBit(bit, true, 7);
 				}
-				if (kStatistics) ++mixer_skip_[ret];
 
 				if (kDecode) {
 					ent.Normalize(stream);
@@ -736,19 +802,9 @@ namespace cm {
     }
 
     uint32_t hashify(uint64_t h) const {
-      if (false) {
-        h += h >> 29;
-        h += h >> 1;
-        h += h >> 2;
-      } else {
-        // 29
-        // h ^= h * (24 * opt_var + 45);
-        // h ^= (h >> opt_var_);
-        h ^= h >> 9;
-        // h ^= h * ((1 << 0) - 5 + 96);
-        h ^= h * (1 + 2 * 174 + 34 * 191 + 94);
-        h += h >> 13;
-      }
+      h ^= h >> 9;
+      h ^= h * (1 + 2 * 174 + 34 * 191 + 94);
+      h += h >> 13;
       return h;
     }
 
@@ -916,8 +972,8 @@ namespace cm {
           match_model_.setCtx(interval_model_ & 0xFF);
           match_model_.updateCurMdl();
           expected_char = match_model_.getExpectedChar(buffer_);
-          uint32_t expected_bits = use_huffman ? huff.getCode(expected_char).length : 8;
-          size_t expected_code = use_huffman ? huff.getCode(expected_char).value : expected_char;
+          uint32_t expected_bits = 8;
+          size_t expected_code = expected_char;
           match_model_.updateExpectedCode(expected_code, expected_bits);
         }
       }
@@ -925,12 +981,7 @@ namespace cm {
       uint32_t h = HashFunc((last_bytes_ & 0xFFFF) * 3, 0x4ec457c1U * 19);
       if (mm_len == 0) {
         ++miss_len_;
-        if (kStatistics) {
-          ++other_count_;
-          ++miss_count_[std::min(kMaxMiss - 1, miss_len_ / 32)];
-        }
         if (miss_len_ >= cur_profile_.MissFastPath()) {
-          if (kStatistics) ++fast_bytes_;
 
           uint32_t mm_hash = h;
           for (size_t order = 3; order <= mm_order; ++order) {
@@ -938,65 +989,57 @@ namespace cm {
           }
           match_model_.setHash(mm_hash);
 
-          if (false) {
+          auto* s0 = &hash_table_[o2pos + (last_bytes_ & 0xFFFF) * o0size];
+          auto* s1 = &hash_table_[o1pos + p0 * o0size];
+          auto* s2 = &hash_table_[o0pos];
+          size_t ctx = 1;
+          uint32_t ch = c << 24;
+          bool second_nibble = false;
+          size_t base_ctx = 0;
+          for (;;) {
+            auto* st0 = s0 + ctx;
+            auto* st1 = s1 + ctx;
+            auto* st2 = s2 + ctx;
+            uint32_t idx0 = (fast_probs_[*st0] + 2048) >> (4 + 4);
+            uint32_t idx1 = (fast_probs_[*st1] + 2048) >> (4 + 4);
+            uint32_t idx2 = (fast_probs_[*st2] + 2048) >> (4 + 4);
+            size_t cur = idx0;
+            cur = (cur << 4) | idx1;
+            cur = (cur << 4) | idx2;
+            // if (opt_var_ == 0) cur = (cur << 8) | (base_ctx + ctx);
+            // else if (opt_var_ == 1) cur = (cur << 8) | idx2;
+            auto* pr = &fast_mix_[cur];
+            auto p = pr->getP();
+            p += p == 0;
+            p -= p == kMaxValue;
+            size_t bit;
             if (decode) {
-              c = ent.DecodeDirectBits(stream, 8);
+              bit = ent.getDecodedBit(p, kShift);
+              ent.Normalize(stream);
             } else {
-              ent.EncodeBits(stream, c, 8);
+              bit = ch >> 31;
+              ent.encode(stream, bit, p, kShift);
+              ch <<= 1;
             }
-          } else {
-            auto* s0 = &hash_table_[o2pos + (last_bytes_ & 0xFFFF) * o0size];
-            auto* s1 = &hash_table_[o1pos + p0 * o0size];
-            auto* s2 = &hash_table_[o0pos];
-            size_t ctx = 1;
-            uint32_t ch = c << 24;
-            bool second_nibble = false;
-            size_t base_ctx = 0;
-            for (;;) {
-              auto* st0 = s0 + ctx;
-              auto* st1 = s1 + ctx;
-              auto* st2 = s2 + ctx;
-              uint32_t idx0 = (fast_probs_[*st0] + 2048) >> (4 + 4);
-              uint32_t idx1 = (fast_probs_[*st1] + 2048) >> (4 + 4);
-              uint32_t idx2 = (fast_probs_[*st2] + 2048) >> (4 + 4);
-              size_t cur = idx0;
-              cur = (cur << 4) | idx1;
-              cur = (cur << 4) | idx2;
-              // if (opt_var_ == 0) cur = (cur << 8) | (base_ctx + ctx);
-              // else if (opt_var_ == 1) cur = (cur << 8) | idx2;
-              auto* pr = &fast_mix_[cur];
-              auto p = pr->getP();
-              p += p == 0;
-              p -= p == kMaxValue;
-              size_t bit;
-              if (decode) {
-                bit = ent.getDecodedBit(p, kShift);
-                ent.Normalize(stream);
-              } else {
-                bit = ch >> 31;
-                ent.encode(stream, bit, p, kShift);
-                ch <<= 1;
+            pr->update(bit, 10);
+            *st0 = state_trans_[*st0][bit];
+            *st1 = state_trans_[*st1][bit];
+            *st2 = state_trans_[*st2][bit];
+            ctx += ctx + bit;
+            if (ctx & 0x10) {
+              if (second_nibble) {
+                break;
               }
-              pr->update(bit, 10);
-              *st0 = state_trans_[*st0][bit];
-              *st1 = state_trans_[*st1][bit];
-              *st2 = state_trans_[*st2][bit];
-              ctx += ctx + bit;
-              if (ctx & 0x10) {
-                if (second_nibble) {
-                  break;
-                }
-                base_ctx = 15 + (ctx ^ 0x10) * 15;
-                s0 += base_ctx;
-                s1 += base_ctx;
-                s2 += base_ctx;
-                ctx = 1;
-                second_nibble = true;
-              }
+              base_ctx = 15 + (ctx ^ 0x10) * 15;
+              s0 += base_ctx;
+              s1 += base_ctx;
+              s2 += base_ctx;
+              ctx = 1;
+              second_nibble = true;
             }
-            if (decode) {
-              c = ctx & 0xFF;
-            }
+          }
+          if (decode) {
+            c = ctx & 0xFF;
           }
           return c;
         }
@@ -1015,15 +1058,10 @@ namespace cm {
       dcheck(ctx_ptr - base_contexts <= kInputs + 1);
       sse_ctx_ = 0;
 
-      uint64_t cur_pos = kStatistics ? polytell(stream) : 0;
+      uint64_t cur_pos = 0;
 
       CalcMixerBase();
       if (mm_len > 0) {
-        if (kStatistics) {
-          if (!decode) {
-            ++(expected_char == c ? match_count_ : non_match_count_);
-          }
-        }
         if (mm_len >= cur_profile_.MinLZPLen()) {
           size_t extra_len = mm_len - match_model_.getMinMatch();
           dcheck(mm_len >= match_model_.getMinMatch());
@@ -1031,20 +1069,10 @@ namespace cm {
           sse_ctx_ = 256 * (1 + expected_char);
           bit = ProcessBits<decode, kBitTypeLZP, 1u>(stream, bit, base_contexts, expected_char ^ 256);
           // CalcMixerBase(false);
-          if (kStatistics) {
-            const uint64_t after_pos = kStatistics ? polytell(stream) : 0;
-            (bit ? lzp_bit_match_bytes_ : lzp_bit_miss_bytes_) += after_pos - cur_pos;
-            cur_pos = after_pos;
-            ++(bit ? match_hits_ : match_miss_)[mm_len + cur_profile_.MatchModelOrder() - 4];
-          }
           if (bit) {
             return expected_char;
           }
         }
-      }
-      if (false) {
-        match_model_.resetMatch();
-        return c;
       }
       // Non match, do normal encoding.
       size_t n = (sse_ctx_ != 0) ?
@@ -1052,9 +1080,6 @@ namespace cm {
 				ProcessBits<decode, kBitTypeNormal, CHAR_BIT>(stream, c, base_contexts, 0);
       if (decode) {
 				c = n;
-      }
-      if (kStatistics) {
-        (sse_ctx_ != 0 ? lzp_miss_bytes_ : normal_bytes_) += polytell(stream) - cur_pos;
       }
 
       return c;

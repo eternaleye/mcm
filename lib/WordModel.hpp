@@ -81,65 +81,6 @@ public:
     trans(reorder[38]) = index++;
     trans(reorder[92]) = index++;
     trans(reorder[3]) = index++;
-    // trans('"') = index++;
-    // trans('&') = index++;
-    // trans('<') = index++;
-    // trans('{') = index++;
-    // trans(3) = index++;
-    // trans(41) = index++;
-    // trans(33) = index++;
-    // trans('[') = index++;
-    // trans(3) = index++;
-    // trans(38) = index++;
-    // trans(6) = index++;
-    // trans(92) = index++;
-
-#if 0
-    trans('À') = trans('à') = index++;
-    trans('Á') = trans('á') = index++;
-    trans('Â') = trans('â') = index++;
-    trans('Ã') = trans('ã') = index++;
-    trans('Ä') = trans('ä') = index++;
-    trans('Å') = trans('å') = index++;
-    trans('Æ') = trans('æ') = index++;
-
-    trans('Ç') = trans('ç') = index++;
-
-    trans('È') = trans('è') = index++;
-    trans('É') = trans('é') = index++;
-    trans('Ê') = trans('ê') = index++;
-    trans('Ë') = trans('ë') = index++;
-
-    trans('Ì') = trans('ì') = index++;
-    trans('Í') = trans('í') = index++;
-    trans('Î') = trans('î') = index++;
-    trans('Ï') = trans('ï') = index++;
-
-    trans('È') = trans('è') = index++;
-    trans('É') = trans('é') = index++;
-    trans('Ê') = trans('ê') = index++;
-    trans('Ë') = trans('ë') = index++;
-
-    trans('Ð') = index++;
-    trans('ð') = index++;
-    trans('Ñ') = trans('ñ') = index++;
-
-    trans('Ò') = trans('ò') = index++;
-    trans('Ó') = trans('ó') = index++;
-    trans('Ô') = trans('ô') = index++;
-    trans('Ö') = trans('ö') = index++;
-    trans('Õ') = trans('õ') = index++;
-
-    trans('Ò') = trans('ò') = index++;
-    trans('Ó') = trans('ó') = index++;
-    trans('Ô') = trans('ô') = index++;
-    trans('Ö') = trans('ö') = index++;
-
-    trans('Ù') = trans('ù') = index++;
-    trans('Ú') = trans('ú') = index++;
-    trans('Û') = trans('û') = index++;
-    trans('Ü') = trans('ü') = index++;
-#endif
     for (size_t i = 128; i < 256; ++i) {
       if (transform[reorder[i]] == transform_table_size) {
         transform[reorder[i]] = index++;
@@ -260,65 +201,6 @@ private:
   uint8_t escape_ = 0;
   uint8_t upper1_ = 0;
   uint8_t upper2_ = 0;
-};
-
-class XMLWordModel : public WordModel {
-public:
-  void init(const ReorderMap<uint8_t, 256>& reorder) {
-    for (auto& c : stack_) c = 0;
-    stack_pos_ = 0;
-    last_symbol_ = 0;
-    tag_ = kTagNone;
-    WordModel::Init(reorder);
-  }
-
-  void update(uint8_t c) {
-    bool update = WordModel::update(c);
-    if (c == '<') {
-      last_symbol_ = c;
-      tag_ = kTagOpen;
-    } else if (c == '/' && last_symbol_ == '<') {
-      last_symbol_ = c;
-      tag_ = kTagClose;
-    } else if (update) {
-      if (tag_ == kTagOpen) {
-        // st_[stack_pos_ & kStackMask] = s;
-        stack_[stack_pos_++ & kStackMask] = prev;
-      } else if (tag_ == kTagClose && c == '>') {
-        if (stack_[--stack_pos_ & kStackMask] != prev) {
-          stack_pos_ = 0;
-        } else {
-          int x = 2;
-        }
-      }
-      // Done word.
-      tag_ = kTagNone;
-      //			s = "";
-    }
-    // s += c;
-  }
-
-  uint32_t getMixedHash() {
-    auto ret = WordModel::getMixedHash();
-    if (tag_ == kTagClose) {
-      ret ^= stack_[(stack_pos_ - 1) & kStackMask] * 3;
-    }
-    return ret;
-  }
-
-private:
-  enum CurrentTag {
-    kTagOpen,
-    kTagClose,
-    kTagNone,
-  };
-  // std::string s;
-  CurrentTag tag_;
-  static const uint32_t kStackMask = 255;
-  uint32_t stack_[kStackMask + 1];
-  // std::string st_[kStackMask + 1];
-  uint32_t stack_pos_;
-  uint8_t last_symbol_ = 0;
 };
 
 #endif

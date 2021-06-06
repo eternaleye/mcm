@@ -72,89 +72,6 @@ protected:
   size_t nonmatch_len_;
 };
 
-class BaseMatchFinder : public MatchFinder {
-public:
-  // Interface for template inheritance.
-  size_t lookaheadPop() {
-    abort();
-    return 0;
-  }
-  size_t lookaheadSize() const {
-    abort();
-    return 0;
-  }
-  size_t lookahead(size_t idx) {
-    abort();
-    return 0;
-  }
-  size_t bufferPos() const {
-    abort();
-    return 0;
-  }
-  void bufferPush(size_t c) {
-    abort();
-  }
-  bool nonmatchPush(size_t c) {
-    abort();
-    return false;
-  }
-  template <typename Stream>
-  void refillRead(Stream& stream) {
-    abort();
-  }
-};
-
-class StreamingMatchFinder : public MatchFinder {
-public:
-  StreamingMatchFinder(size_t min_match, size_t max_match) : MatchFinder(min_match, max_match) {}
-  template <typename Stream>
-  void RefillRead(Stream& stream) {
-    while (!lookahead_.Full()) {
-      int c = stream.get();
-      if (c == EOF) break;
-      lookahead_.PushBack(c);
-    }
-  }
-  // Return 0 to max_match_ as len.
-  size_t MatchLen(size_t pos) {
-    const size_t max_match = MaxMatch();
-    size_t len = 0;
-    for (;len < max_match && lookahead_[len] != buffer_[pos + len]; ++len);
-    return len;
-  }
-
-  // Interface for template inheritance.
-  size_t lookaheadMove() {
-    const uint8_t c = lookahead_.Front();
-    lookahead_.PopFront();
-    buffer_.Push(c);
-    return c;
-  }
-  size_t LookaheadSize() const {
-    return lookahead_.Size();
-  }
-  size_t Lookahead(size_t idx) {
-    return lookahead_[idx];
-  }
-  size_t BufferPos() const {
-    return buffer_.Pos();
-  }
-  bool NonmatchPush(size_t c) {
-    if (nonmatch_len_ >= nonmatch_.size()) {
-      return false;
-    }
-    nonmatch_[nonmatch_len_++] = c;
-    return true;
-  }
-
-protected:
-  static const size_t kMaxNonMatch = 4 * KB;
-  CyclicBuffer<uint8_t> buffer_;
-  CyclicDeque<uint8_t> lookahead_;
-  std::array<uint8_t, kMaxNonMatch> nonmatch_;
-  size_t nonmatch_len_;
-};
-
 // Used for fast memory LZ compressors.
 class MemoryMatchFinder : public MatchFinder {
 public:
@@ -285,17 +202,6 @@ public:
                 }
               }
             }
-            /*
-            if (false) {
-              size_t new_pos = *pos1;
-              while (new_pos > 0 && len < max_match && nonmatch_len_ > 0 && len < offset) {
-                --new_pos;
-                if (buffer_[buffer_pos_ - 1] != buffer_[new_pos]) break;
-                ++len;
-                --buffer_pos_;
-                --nonmatch_len_;
-              }
-            }*/
           }
           if (len >= min_match && len > ret.Length()) {
             ret = Match(offset, len);
@@ -326,55 +232,6 @@ private:
   std::vector<uint32_t> hash_table_;
   std::vector<uint32_t> hash_table2_;
 };
-
-#if 0
-class GreedyMatchFinder : public MemoryMatchFinder {
-public:
-  uint32_t opt;
-
-  void init(uint8_t* in, const uint8_t* limit);
-  GreedyMatchFinder();
-  Match FindNextMatch();
-  inline hash_t HashFunc(uint32_t a, hash_t b) {
-    b += a;
-    b += rotate_left(b, 6);
-    return b ^ (b >> 23);
-  }
-
-private:
-  static const uint32_t kMinMatch = 4;
-  static const uint32_t kMaxDist = 0xFFFF;
-  // This is probably not very efficient.
-  class Entry {
-  public:
-    Entry() {
-      init();
-    }
-    void init() {
-      pos_ = std::numeric_limits<uint32_t>::max() - kMaxDist * 2;
-      hash_ = 0;
-    }
-    inline static uint32_t getHash(uint32_t word, uint32_t slot) {
-      return slot | (word & ~0xFFU);
-    }
-    inline static uint32_t getLen(uint32_t word) {
-      return word & 0xFF;
-    }
-    inline static uint32_t buildWord(uint32_t h, uint32_t len) {
-      return (h & ~0xFFU) | len;
-    }
-    inline void setHash(uint32_t h) {
-      hash_ = h;
-    }
-
-    uint32_t pos_;
-    uint32_t hash_;
-  };
-  std::vector<Entry> hash_storage_;
-  uint32_t hash_mask_;
-  Entry* hash_table_;
-};
-#endif
 
 #endif
 
