@@ -114,8 +114,8 @@ public:
   bool addDirectory(const std::string& dir, const std::string* prefix = nullptr);
   bool addDirectoryRec(const std::string& dir, const std::string* prefix = nullptr);
   // Read / write to stream.
-  void read(Stream* stream);
-  void write(Stream* stream);
+  void read(InStream* stream);
+  void write(OutStream* stream);
 };
 
 
@@ -314,7 +314,7 @@ public:
       for (const auto& seg : ranges_) total_size_ += seg.length_;
     }
 
-    void write(Stream* stream) {
+    void write(OutStream* stream) {
       stream->leb128Encode(stream_idx_);
       stream->leb128Encode(base_offset_);
       stream->leb128Encode(ranges_.size());
@@ -330,7 +330,7 @@ public:
       }
     }
 
-    void read(Stream* stream) {
+    void read(InStream* stream) {
       stream_idx_ = stream->leb128Decode();
       base_offset_ = stream->leb128Decode();
       const auto num_ranges = stream->leb128Decode();

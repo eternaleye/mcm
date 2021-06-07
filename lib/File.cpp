@@ -25,7 +25,7 @@
 
 #include <memory>  // for allocator, allocator_traits<>::value_type
 
-void FileList::read(Stream* stream) {
+void FileList::read(InStream* stream) {
   resize(stream->leb128Decode());
   std::vector<size_t> lens(size());
   for (auto& f : *this) {
@@ -46,7 +46,7 @@ void FileList::read(Stream* stream) {
   }
 }
 
-void FileList::write(Stream* stream) {
+void FileList::write(OutStream* stream) {
   // Arrays of elements, prefix elimination for filenames.
   stream->leb128Encode(size());
   // Encode file names.
