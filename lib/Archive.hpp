@@ -36,9 +36,6 @@
 #include "File.hpp"        // for FileSegmentStream::FileSegments, FileInfo ...
 #include "Util.hpp"        // for FrequencyCounter
 
-class Filter;
-class Stream;
-
 // Force filter
 enum FilterType {
   kFilterTypeNone,
@@ -155,7 +152,7 @@ namespace Archive {
 class Archiver {
 public:
   // Compression.
-  Archiver(Stream* stream, const CompressionOptions& options);
+  Archiver(OutStream* stream, const CompressionOptions& options);
 
   CompressionOptions& Options() {
     return options_;
@@ -179,7 +176,7 @@ public:
 
   size_t* opt_vars_ = nullptr;
 private:
-  /*Out*/Stream* stream_;
+  OutStream* stream_;
   Archive::Header header_;
   CompressionOptions options_;
   size_t opt_var_;
@@ -190,7 +187,7 @@ private:
 class Unarchiver {
 public:
   // Decompression.
-  Unarchiver(Stream* stream);
+  Unarchiver(InStream* stream);
 
   const Archive::Header& getHeader() const {
     return header_;
@@ -221,7 +218,7 @@ public:
 
   size_t* opt_vars_ = nullptr;
 private:
-  /*In*/Stream* stream_;
+  InStream* stream_;
   Archive::Header header_;
   CompressionOptions options_;
   size_t opt_var_;

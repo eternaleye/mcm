@@ -45,7 +45,7 @@
 #include "Dict.hpp"                // for Dict::CodeWordSet, Dict::Filter, Dict
 #include "Filter.hpp"              // for Filter
 #include "ProgressMeter.hpp"       // for ProgressThread, AutoUpdater
-#include "Stream.hpp"              // for Stream, ReadMemoryStream, VerifyStream
+#include "Stream.hpp"              // for Stream, InStream, OutStream, ReadMemoryStream, VerifyStream
 #include "WordCounter.hpp"         // for WordCount
 #include "X86Binary.hpp"           // for X86AdvancedFilter
 
@@ -233,7 +233,7 @@ public:
   AnalyzerProgressThread() : stream_(nullptr), start_(std::chrono::high_resolution_clock::now()), add_bytes_(0), add_files_(0) {
   }
 
-  void setStream(Stream* stream) {
+  void setStream(InStream* stream) {
     std::unique_lock<std::mutex> lock(mutex_);
     stream_ = stream;
   }
@@ -259,7 +259,7 @@ public:
   }
 
 private:
-  Stream* stream_;
+  InStream* stream_;
   std::chrono::high_resolution_clock::time_point start_;
   uint64_t add_bytes_;
   uint64_t add_files_;
@@ -493,7 +493,7 @@ void Archive::SolidBlock::read(InStream* stream) {
 
 // Archiver
 
-Archiver::Archiver(Stream* stream, const CompressionOptions& options) : stream_(stream), options_(options), opt_var_(0) {
+Archiver::Archiver(OutStream* stream, const CompressionOptions& options) : stream_(stream), options_(options), opt_var_(0) {
   header_.write(stream_);
 }
 
@@ -631,7 +631,7 @@ uint64_t Archiver::compress(const std::vector<FileInfo>& in_files) {
     std::cout << "Compressing " << Detector::profileToString(algo->profile())
       << " block size=" << formatNumber(block->total_size_) << "\t" << std::endl;
     std::unique_ptr<Filter> filter(algo->createFilter(&segstream, &analyzer, options_, opt_var_, opt_vars_));
-    Stream* in_stream = &segstream;
+    InStream* in_stream = &segstream;
     FrequencyCounter<256> freq;
     if (filter != nullptr) {
       in_stream = filter.get();
@@ -668,7 +668,7 @@ uint64_t Archiver::compress(const std::vector<FileInfo>& in_files) {
 
 // Unarchiver
 
-Unarchiver::Unarchiver(Stream* stream) : stream_(stream), opt_var_(0) {
+Unarchiver::Unarchiver(InStream* stream) : stream_(stream), opt_var_(0) {
   header_.read(stream_);
 }
 
