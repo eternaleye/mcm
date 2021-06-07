@@ -441,44 +441,44 @@ private:
   }
 };
 
-inline WriteStream& operator << (WriteStream& stream, uint8_t c) {
+inline OutStream& operator << (OutStream& stream, uint8_t c) {
   stream.put(c);
   return stream;
 }
 
-inline WriteStream& operator << (WriteStream& stream, int8_t c) {
+inline OutStream& operator << (OutStream& stream, int8_t c) {
   return stream << static_cast<uint8_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, uint16_t c) {
+inline OutStream& operator << (OutStream& stream, uint16_t c) {
   return stream << static_cast<uint8_t>(c >> 8) << static_cast<uint8_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, int16_t c) {
+inline OutStream& operator << (OutStream& stream, int16_t c) {
   return stream << static_cast<uint16_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, uint32_t c) {
+inline OutStream& operator << (OutStream& stream, uint32_t c) {
   return stream << static_cast<uint16_t>(c >> 16) << static_cast<uint16_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, int32_t c) {
+inline OutStream& operator << (OutStream& stream, int32_t c) {
   return stream << static_cast<uint32_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, uint64_t c) {
+inline OutStream& operator << (OutStream& stream, uint64_t c) {
   return stream << static_cast<uint16_t>(c >> 32) << static_cast<uint16_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, int64_t c) {
+inline OutStream& operator << (OutStream& stream, int64_t c) {
   return stream << static_cast<uint64_t>(c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, float c) {
+inline OutStream& operator << (OutStream& stream, float c) {
   return stream << *reinterpret_cast<uint32_t*>(&c);
 }
 
-inline WriteStream& operator << (WriteStream& stream, double c) {
+inline OutStream& operator << (OutStream& stream, double c) {
   return stream << *reinterpret_cast<uint64_t*>(&c);
 }
 

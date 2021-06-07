@@ -45,16 +45,7 @@ public:
   }
 };
 
-class ReadStream : public Stream {
-public:
-  virtual int get() = 0;
-  virtual void put(int c) {
-    throw libmcm::unimplemented_error(__FUNCTION__);
-  }
-  virtual ~ReadStream() {}
-};
-
-class ReadMemoryStream : public ReadStream {
+class ReadMemoryStream : public InStream {
 public:
   ReadMemoryStream(const std::vector<uint8_t>* buffer)
     : buffer_(buffer->data())
@@ -86,7 +77,7 @@ private:
   const uint8_t* const limit_;
 };
 
-class WriteMemoryStream : public WriteStream {
+class WriteMemoryStream : public OutStream {
 public:
   explicit WriteMemoryStream(uint8_t* buffer) : buffer_(buffer), pos_(buffer) {
   }
@@ -106,7 +97,7 @@ private:
   uint8_t* pos_;
 };
 
-class WriteVectorStream : public WriteStream {
+class WriteVectorStream : public OutStream {
 public:
   explicit WriteVectorStream(std::vector<uint8_t>* buffer) : buffer_(buffer) {
   }
@@ -224,14 +215,17 @@ private:
   uint8_t* ptr_;
 };
 
-class VerifyStream : public WriteStream {
+class VerifyStream : public Stream {
 public:
-  Stream* const stream_;
+  InStream* const stream_;
   uint64_t differences_;
   uint64_t count_, ref_count_;
 
-  VerifyStream(Stream* stream, size_t ref_count) : stream_(stream), count_(0), ref_count_(ref_count) {
+  VerifyStream(InStream* stream, size_t ref_count) : stream_(stream), count_(0), ref_count_(ref_count) {
     init();
+  }
+  int get() {
+    throw libmcm::unimplemented_error(__FUNCTION__);
   }
   uint64_t getCount() const {
     return count_;

@@ -97,6 +97,7 @@ class OutStream {
             }
             put(terminator);
         }
+        void flush() {}
         virtual ~OutStream() {}
 };
 
