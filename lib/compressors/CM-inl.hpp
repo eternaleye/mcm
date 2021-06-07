@@ -322,11 +322,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
-inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in, Stream* out, uint64_t count) {
-    compress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
-}
-
-template <size_t kInputs, bool kUseSSE, typename HistoryType>
 inline void CM<kInputs, kUseSSE, HistoryType>::compress(InStream* in_stream, OutStream* out_stream, uint64_t max_count) {
   BufferedStreamWriter<4 * KB> sout(out_stream);
   BufferedStreamReader<4 * KB> sin(in_stream);
@@ -368,11 +363,6 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(InStream* in_stream, Out
       std::cout << std::endl << less64 << "/" << total << " = " << double(less64) / double(total) << std::endl;
     }
   }
-}
-
-template <size_t kInputs, bool kUseSSE, typename HistoryType>
-inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in, Stream* out, uint64_t count) {
-    decompress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>

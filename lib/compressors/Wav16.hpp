@@ -275,9 +275,6 @@ public:
     }
   }
 
-  virtual void compress(Stream* in, Stream* out, uint64_t count) {
-    compress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
-  }
   virtual void compress(InStream* in_stream, OutStream* out_stream, uint64_t max_count) {
     BufferedStreamReader<4 * KB> sin(in_stream);
     BufferedStreamWriter<4 * KB> sout(out_stream);
@@ -334,9 +331,6 @@ public:
     sout.flush();
   }
 
-  virtual void decompress(Stream* in, Stream* out, uint64_t count) {
-    decompress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
-  }
   virtual void decompress(InStream* in_stream, OutStream* out_stream, uint64_t max_count) {
     BufferedStreamReader<4 * KB> sin(in_stream);
     BufferedStreamWriter<4 * KB> sout(out_stream);

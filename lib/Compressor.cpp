@@ -36,10 +36,6 @@ Store::Store() {
   }
 }
 
-void Store::compress(Stream* in, Stream* out, uint64_t count) {
-    compress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
-}
-
 void Store::compress(InStream* in, OutStream* out, uint64_t count) {
   static const uint64_t kBufferSize = 8 * KB;
   uint8_t buffer[kBufferSize];
@@ -53,10 +49,6 @@ void Store::compress(InStream* in, OutStream* out, uint64_t count) {
   }
 }
 
-void Store::decompress(Stream* in, Stream* out, uint64_t count) {
-    decompress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
-}
-
 void Store::decompress(InStream* in, OutStream* out, uint64_t count) {
   static const uint64_t kBufferSize = 8 * KB;
   uint8_t buffer[kBufferSize];
@@ -68,10 +60,6 @@ void Store::decompress(InStream* in, OutStream* out, uint64_t count) {
     out->write(buffer, read);
     count -= read;
   }
-}
-
-void MemoryCompressor::compress(Stream* in, Stream* out, uint64_t count) {
-    compress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
 }
 
 void MemoryCompressor::compress(InStream* in, OutStream* out, uint64_t max_count) {
@@ -88,10 +76,6 @@ void MemoryCompressor::compress(InStream* in, OutStream* out, uint64_t max_count
     max_count -= n;
   }
   out->leb128Encode(0);
-}
-
-void MemoryCompressor::decompress(Stream* in, Stream* out, uint64_t count) {
-    decompress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
 }
 
 void MemoryCompressor::decompress(InStream* in, OutStream* out, uint64_t max_count) {
