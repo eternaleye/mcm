@@ -72,25 +72,44 @@ public:
   }
 
   // Surprisingly expensive to call...
-  void printRatio(uint64_t comp_size, uint64_t in_size, const std::string& extra) const {
-    const auto ratio = double(comp_size) / in_size;
+  void printRatio(uint64_t out_size, uint64_t in_size, const std::string& extra) const {
     auto cur_time = std::chrono::high_resolution_clock::now();
     auto time_delta = cur_time - start;
     if (time_delta == std::chrono::high_resolution_clock::duration::zero()) {
         time_delta = std::chrono::high_resolution_clock::duration::min();
     }
     const std::chrono::duration<double, std::ratio<1>> delta_secs = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(time_delta);
-    const uint32_t rate = uint32_t(double(in_size / KB) / delta_secs.count());
     std::ostringstream oss;
-    oss << in_size / KB << "KB ";
-    if (comp_size > KB) {
-      oss << (encode ? "->" : "<-") << " " << comp_size / KB << "KB ";
-    } else {
-      oss << ", ";
-    }
-    oss << rate << "KB/s";
-    if (comp_size > KB) {
+    if (encode) {
+      const auto ratio = double(out_size) / in_size;
+      const uint32_t rate = uint32_t(double(in_size / KB) / delta_secs.count());
+      if (in_size >= KB) {
+        oss << in_size / KB << "KB";
+      } else {
+        oss << in_size << "B";
+      }
+      oss << " -> ";
+      if (out_size >= KB) {
+        oss << out_size / KB << "KB";
+      } else {
+        oss << out_size << "B";
+      }
+      oss << " @ " << rate << "KB/s";
       oss << " ratio: " << std::setprecision(5) << std::fixed << ratio << extra.c_str();
+    } else {
+      const uint32_t rate = uint32_t(double(out_size / KB) / delta_secs.count());
+      if (out_size >= KB) {
+        oss << out_size / KB << "KB";
+      } else {
+        oss << out_size << "B";
+      }
+      oss << " <- ";
+      if (in_size >= KB) {
+        oss << in_size / KB << "KB";
+      } else {
+        oss << in_size << "B";
+      }
+      oss << " @ " << rate << "KB/s";
     }
     std::cout << oss.str() << "\t\r" << std::flush;
   }
@@ -157,7 +176,7 @@ protected:
 
 class ProgressThread : public AutoUpdater {
 public:
-  ProgressThread(Stream* in_stream, Stream* out_stream, bool encode = true, uint64_t sub_out = 0, uintptr_t interval = 250)
+  ProgressThread(InStream* in_stream, OutStream* out_stream, bool encode = true, uint64_t sub_out = 0, uintptr_t interval = 250)
     : AutoUpdater(interval), in_stream_(in_stream), out_stream_(out_stream), sub_out_(sub_out), meter_(encode) {
   }
   ~ProgressThread() {
@@ -172,8 +191,8 @@ public:
   }
 
 protected:
-  Stream* const in_stream_;
-  Stream* const out_stream_;
+  InStream* const in_stream_;
+  OutStream* const out_stream_;
   const uint64_t sub_out_;
   ProgressMeter meter_;
 };

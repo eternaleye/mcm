@@ -40,7 +40,7 @@
 #include "compressors/LZ.hpp"      // for LZ16, SimpleEncoder
 #include "compressors/LZ-inl.hpp"  // for LZ16::compress, LZ16::decompress
 
-#include "Archive.hpp"             // for CompressionOptions, Archive, Archive::Header
+#include "Archive.hpp"             // for CompressionOptions, Archiver, Unarchiver, Archive::Header
 #include "File.hpp"                // for FileInfo, File
 #include "MatchFinder.hpp"         // for FastMatchFinder, MemoryMatchFinder
 #include "Stream.hpp"              // for VoidWriteStream
@@ -263,7 +263,7 @@ public:
         // Try to open file.
         File fin;
         if (fin.open(argv[i], std::ios_base::in | std::ios_base::binary) == 0) {
-          Archive archive(&fin);
+          Unarchiver archive(&fin);
           const auto& header = archive.getHeader();
           if (header.isArchive()) {
             mode = kModeDecompress;
@@ -445,7 +445,7 @@ int main(int argc, char* argv[]) {
           auto a = i % kMaxIndex;
           auto b = (i + index_increments(randomness)) % kMaxIndex;
           VoidWriteStream fout;
-          Archive archive(&fout, options.options_);
+          Archiver archive(&fout, options.options_);
           if (i != 0) {
             ReplaceSubstring(opts, a, len, b, kOpts);
           }
@@ -473,7 +473,7 @@ int main(int argc, char* argv[]) {
         for (size_t i = 0;; ++i) {
           const auto start = std::chrono::high_resolution_clock::now();
           VoidWriteStream fout;
-          Archive archive(&fout, options.options_);
+          Archiver archive(&fout, options.options_);
           if (!archive.setOpts(opts)) {
             continue;
           }
@@ -529,7 +529,7 @@ int main(int argc, char* argv[]) {
       }
 
       std::cout << "Compressing to " << out_file << " mode=" << options.options_.comp_level_ << " mem=" << options.options_.mem_usage_ << std::endl;
-      Archive archive(&fout, options.options_);
+      Archiver archive(&fout, options.options_);
       uint64_t in_bytes = archive.compress(options.files);
       const std::chrono::duration<double, std::ratio<1>> time =  std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::high_resolution_clock::now() - start);
       std::cout << "Done compressing " << formatNumber(in_bytes) << " -> " << formatNumber(fout.tellp())
@@ -543,7 +543,7 @@ int main(int argc, char* argv[]) {
           std::cerr << "Error opening: " << out_file << " (" << errstr(err) << ")" << std::endl;
           return 1;
         }
-        Archive archive(&fout);
+        Unarchiver archive(&fout);
         archive.list();
         std::cout << "Verifying archive decompression" << std::endl;
         archive.decompress("", true);
@@ -565,7 +565,7 @@ int main(int argc, char* argv[]) {
     }
     printHeader();
     std::cout << "Listing files in archive " << in_file << std::endl;
-    Archive archive(&fin);
+    Unarchiver archive(&fin);
     const auto& header = archive.getHeader();
     if (!header.isArchive()) {
       std::cerr << "Attempting to open non mcm compatible file" << std::endl;
@@ -590,7 +590,7 @@ int main(int argc, char* argv[]) {
     }
     printHeader();
     std::cout << "Decompresing archive " << in_file << std::endl;
-    Archive archive(&fin);
+    Unarchiver archive(&fin);
     const auto& header = archive.getHeader();
     if (!header.isArchive()) {
       std::cerr << "Attempting to decompress non archive file" << std::endl;

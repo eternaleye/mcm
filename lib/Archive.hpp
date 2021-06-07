@@ -82,8 +82,7 @@ public:
 };
 
 // File headers are stored in a list of blocks spread out through data.
-class Archive {
-public:
+namespace Archive {
   class Header {
   public:
     static const size_t kCurMajorVersion = 0;
@@ -94,8 +93,8 @@ public:
       return "MCMARCHIVE";
     }
     Header();
-    void read(Stream* stream);
-    void write(Stream* stream);
+    void read(InStream* stream);
+    void write(OutStream* stream);
     bool isArchive() const;
     bool isSameVersion() const;
     uint16_t majorVersion() const {
@@ -115,12 +114,12 @@ public:
   public:
     Algorithm() {}
     Algorithm(const CompressionOptions& options, Detector::Profile profile);
-    Algorithm(Stream* stream);
+    Algorithm(InStream* stream);
     // Freq is the approximate distribution of input frequencies for the compressor.
     Compressor* CreateCompressor(const FrequencyCounter<256>& freq);
-    void read(Stream* stream);
-    void write(Stream* stream);
-    Filter* createFilter(Stream* stream, Analyzer* analyzer, Archive& archive, size_t opt_var = 0);
+    void read(InStream* stream);
+    void write(OutStream* stream);
+    Filter* createFilter(Stream* stream, Analyzer* analyzer, CompressionOptions& opts, size_t opt_var, size_t* opt_vars);
     Detector::Profile profile() const {
       return profile_;
     }
@@ -142,26 +141,58 @@ public:
 
     SolidBlock() = default;
     SolidBlock(const Algorithm& algorithm) : algorithm_(algorithm) {}
-    void write(Stream* stream);
-    void read(Stream* stream);
+    void write(OutStream* stream);
+    void read(InStream* stream);
   };
 
   class Blocks : public std::vector<std::unique_ptr<SolidBlock>> {
   public:
-    void write(Stream* stream);
-    void read(Stream* stream);
+    void write(OutStream* stream);
+    void read(InStream* stream);
   };
+};
 
+class Archiver {
+public:
   // Compression.
-  Archive(Stream* stream, const CompressionOptions& options);
+  Archiver(Stream* stream, const CompressionOptions& options);
 
+  CompressionOptions& Options() {
+    return options_;
+  }
+
+  bool setOpt(size_t var) {
+    opt_var_ = var;
+    return true;
+  }
+
+  bool setOpts(size_t* vars) {
+    opt_vars_ = vars;
+    setOpt(vars[0]);
+    return true;
+  }
+
+  void writeBlocks();
+
+  // Analyze and compress. Returns how many bytes wre compressed.
+  uint64_t compress(const std::vector<FileInfo>& in_files);
+
+  size_t* opt_vars_ = nullptr;
+private:
+  /*Out*/Stream* stream_;
+  Archive::Header header_;
+  CompressionOptions options_;
+  size_t opt_var_;
+  FileList files_;  // File list.
+  Archive::Blocks blocks_;  // Solid blocks.
+};
+
+class Unarchiver {
+public:
   // Decompression.
-  Archive(Stream* stream);
+  Unarchiver(Stream* stream);
 
-  // Construct blocks from analyzer.
-  void constructBlocks(Analyzer::Blocks* blocks_for_file);
-
-  const Header& getHeader() const {
+  const Archive::Header& getHeader() const {
     return header_;
   }
 
@@ -180,11 +211,7 @@ public:
     return true;
   }
 
-  void writeBlocks();
   void readBlocks();
-
-  // Analyze and compress. Returns how many bytes wre compressed.
-  uint64_t compress(const std::vector<FileInfo>& in_files);
 
   // Decompress.
   void decompress(const std::string& out_dir, bool verify = false);
@@ -194,15 +221,12 @@ public:
 
   size_t* opt_vars_ = nullptr;
 private:
-  Stream* stream_;
-  Header header_;
+  /*In*/Stream* stream_;
+  Archive::Header header_;
   CompressionOptions options_;
-  size_t opt_var_;  
+  size_t opt_var_;
   FileList files_;  // File list.
-  Blocks blocks_;  // Solid blocks.
-
-  void init();
-  Compressor* createMetaDataCompressor();
+  Archive::Blocks blocks_;  // Solid blocks.
 };
 
 #endif
