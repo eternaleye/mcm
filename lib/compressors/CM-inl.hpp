@@ -322,7 +322,12 @@ inline void CM<kInputs, kUseSSE, HistoryType>::init() {
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
-inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Stream* out_stream, uint64_t max_count) {
+inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in, Stream* out, uint64_t count) {
+    compress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
+}
+
+template <size_t kInputs, bool kUseSSE, typename HistoryType>
+inline void CM<kInputs, kUseSSE, HistoryType>::compress(InStream* in_stream, OutStream* out_stream, uint64_t max_count) {
   BufferedStreamWriter<4 * KB> sout(out_stream);
   BufferedStreamReader<4 * KB> sin(in_stream);
   assert(in_stream != nullptr);
@@ -366,7 +371,12 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Strea
 }
 
 template <size_t kInputs, bool kUseSSE, typename HistoryType>
-inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in_stream, Stream* out_stream, uint64_t max_count) {
+inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in, Stream* out, uint64_t count) {
+    decompress(static_cast<InStream*>(in), static_cast<OutStream*>(out), count);
+}
+
+template <size_t kInputs, bool kUseSSE, typename HistoryType>
+inline void CM<kInputs, kUseSSE, HistoryType>::decompress(InStream* in_stream, OutStream* out_stream, uint64_t max_count) {
   BufferedStreamReader<4 * KB> sin(in_stream);
   BufferedStreamWriter<4 * KB> sout(out_stream);
   OutDetector detector(out_stream);

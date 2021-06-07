@@ -1173,7 +1173,9 @@ namespace cm {
     }
 
     virtual void compress(Stream* in_stream, Stream* out_stream, uint64_t max_count);
+    virtual void compress(InStream* in_stream, OutStream* out_stream, uint64_t max_count);
     virtual void decompress(Stream* in_stream, Stream* out_stream, uint64_t max_count);
+    virtual void decompress(InStream* in_stream, OutStream* out_stream, uint64_t max_count);
   };
 
 }
