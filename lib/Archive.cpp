@@ -634,7 +634,7 @@ uint64_t Archiver::compress(const std::vector<FileInfo>& in_files) {
     InStream* in_stream = &segstream;
     FrequencyCounter<256> freq;
     if (filter != nullptr) {
-      in_stream = filter.get();
+      in_stream = &*filter;
       freq = filter->GetFrequencies();
     }
     auto in_start = in_stream->tellg();
@@ -738,7 +738,7 @@ void Unarchiver::decompress(const std::string& out_dir, bool verify) {
     std::unique_ptr<Filter> filter(algo->createFilter(filter_out_stream, nullptr, options_, opt_var_, opt_vars_));
     FrequencyCounter<256> freq;
     if (filter != nullptr) {
-      filter_out_stream = filter.get();
+      filter_out_stream = &*filter;
       freq = filter->GetFrequencies();
     }
     std::unique_ptr<Compressor> comp(algo->CreateCompressor(freq));
@@ -747,7 +747,7 @@ void Unarchiver::decompress(const std::string& out_dir, bool verify) {
     {
       ProgressThread thr(stream_, out_stream, false, out_start);
       comp->decompress(stream_, filter_out_stream, block_size);
-      if (filter.get() != nullptr) filter->flush();
+      if (filter != nullptr) filter->flush();
     }
     differences += verify_segstream.totalDifferences();
     const auto end = std::chrono::high_resolution_clock::now();
