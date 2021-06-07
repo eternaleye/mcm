@@ -56,15 +56,19 @@ public:
   virtual void decompress(uint8_t* in, uint8_t* out, size_t count) = 0;
   // Initial implementations of compress and decompress from memory.
   virtual void compress(Stream* in, Stream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF);
+  virtual void compress(InStream* in, OutStream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF);
   // Decompress n bytes, the calls must line up.
   virtual void decompress(Stream* in, Stream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF);
+  virtual void decompress(InStream* in, OutStream* out, uint64_t max_count = 0xFFFFFFFFFFFFFFFF);
 };
 
 class Store : public Compressor {
 public:
   Store();
   virtual void compress(Stream* in, Stream* out, uint64_t count);
+  virtual void compress(InStream* in, OutStream* out, uint64_t count);
   virtual void decompress(Stream* in, Stream* out, uint64_t count);
+  virtual void decompress(InStream* in, OutStream* out, uint64_t count);
 private:
   uint8_t transform_[256];
   uint8_t reverse_[256];
