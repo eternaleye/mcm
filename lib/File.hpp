@@ -37,7 +37,7 @@
 #include <cstdint>     // for uint64_t, uint8_t, uint16_t, uint32_t, int64_t
 #include <cstdio>      // for size_t, ftello, SEEK_SET, clearerr, fclose
 
-#include "Stream.hpp"  // for Stream, WriteStream
+#include "Stream.hpp"  // for Stream
 #include "Util.hpp"    // for check, dcheck
 
 #ifndef WIN32
@@ -130,7 +130,7 @@ public:
   }
 
   File() {}
-  File(const std::string& file_name, std::ios_base::open_mode mode = std::ios_base::in | std::ios_base::binary) {
+  File(const std::string& file_name, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::binary) {
     open(file_name, mode);
   }
 
@@ -180,7 +180,7 @@ public:
   }
 
   // Return 0 if successful, errno otherwise.
-  int open(const std::string& fileName, std::ios_base::open_mode mode = std::ios_base::in | std::ios_base::binary) {
+  int open(const std::string& fileName, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::binary) {
     close();
     std::ostringstream oss;
     if (mode & std::ios_base::in) {
