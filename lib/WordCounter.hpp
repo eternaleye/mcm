@@ -48,22 +48,6 @@ enum WordCC {
   kWordCCCount, // Number of elements
 };
 
-static WordCC GetWordCase(const uint8_t* word, size_t word_len) {
-  bool first_cap = IsUpperCase(word[0]);
-  size_t cap_count = first_cap;
-  for (size_t i = 1; i < word_len; ++i) {
-    cap_count += IsUpperCase(word[i]);
-  }
-  if (cap_count == word_len) {
-    return kWordCCAll;
-  } else if (first_cap && cap_count == 1) {
-    return kWordCCFirstChar;
-  } else if (cap_count != 0) {
-    return kWordCCInvalid;
-  }
-  return kWordCCNone;
-}
-
 class WordCount {
   std::string word_;
 

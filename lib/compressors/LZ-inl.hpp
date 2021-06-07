@@ -30,6 +30,10 @@
 #include <cassert>    // for assert
 #include <climits>    // for CHAR_BIT
 
+inline void copy16bytes(uint8_t* __restrict out, const uint8_t* __restrict in) {
+  _mm_storeu_ps(reinterpret_cast<float*>(out), _mm_loadu_ps(reinterpret_cast<const float*>(in)));
+}
+
 static inline uint8_t* WriteMatch(uint8_t* out, const uint8_t* in, size_t non_match_len, size_t match_len, uint16_t offset) {
   assert(match_len <= 15);
   assert(non_match_len <= 15);

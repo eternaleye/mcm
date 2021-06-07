@@ -46,8 +46,6 @@ static const bool kIsDebugBuild = true;
 static const bool kIsDebugBuild = false;
 #endif
 
-typedef uint32_t hash_t;
-
 static const uint64_t KB = 1024;
 static const uint64_t MB = KB * KB;
 static const uint64_t GB = KB * MB;
@@ -101,11 +99,6 @@ inline static int MakeLowerCase(int c) {
 inline uint32_t rotate_left(uint32_t h, uint32_t bits) {
   assert(bits < sizeof(h) * char_bit);
   return (h << bits) | (h >> (-bits & (sizeof(h) * CHAR_BIT - 1)));
-}
-
-// Used by Compressor.cpp, LZ-inl.hpp
-inline void copy16bytes(uint8_t* __restrict out, const uint8_t* __restrict in) {
-  _mm_storeu_ps(reinterpret_cast<float*>(out), _mm_loadu_ps(reinterpret_cast<const float*>(in)));
 }
 
 // Used by many

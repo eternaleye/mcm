@@ -495,7 +495,7 @@ namespace cm {
 
     HistoryType* out_history_ = nullptr;
 
-    inline uint32_t HashLookup(hash_t hash, bool prefetch_addr) {
+    inline uint32_t HashLookup(uint32_t hash, bool prefetch_addr) {
       hash &= hash_mask_;
       const uint32_t ret = hash + kHashStart;
       if (prefetch_addr && kUsePrefetch) {
