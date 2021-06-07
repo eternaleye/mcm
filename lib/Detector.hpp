@@ -48,27 +48,6 @@
 
 // Detects blocks and data type from input data
 class Detector {
-  bool is_forbidden[256]; // Chars which don't appear in text often.
-  bool is_word_or_ascii_art[256];
-  uint8_t is_space[256];
-
-  // MZ pattern, todo replace with better detection.
-  typedef std::vector<uint8_t> Pattern;
-  Pattern exe_pattern;
-
-  // Lookahed.
-  using BufferType = CyclicDeque<uint8_t>;
-  BufferType buffer_;
-
-  // Out buffer, only used to store headers (for now).
-  std::array<uint8_t, 16 * KB> out_buffer_;
-  size_t out_buffer_pos_, out_buffer_size_;
-
-  // Read / write stream.
-  Stream* stream_;
-
-  // Opt var
-  size_t opt_var_;
 public:
   // Pre-detected.
   enum Profile {
@@ -82,6 +61,15 @@ public:
     // Not a real profile, tells CM to use streaming detection.
     kProfileDetect,
   };
+
+  static std::string profileToString(Profile profile) {
+    switch (profile) {
+    case Detector::kProfileBinary: return "binary";
+    case Detector::kProfileText: return "text";
+    case Detector::kProfileWave16: return "wav16";
+    }
+    return "unknown";
+  }
 
   class DetectedBlock {
   public:
@@ -155,28 +143,45 @@ public:
     Profile profile_;
     uint64_t length_;
   };
+};
 
-  static std::string profileToString(Profile profile) {
-    switch (profile) {
-    case kProfileBinary: return "binary";
-    case kProfileText: return "text";
-    case kProfileWave16: return "wav16";
-    }
-    return "unknown";
-  }
+// Detects blocks and data type from input data
+class InDetector {
+  bool is_forbidden[256]; // Chars which don't appear in text often.
+  bool is_word_or_ascii_art[256];
+  uint8_t is_space[256];
+
+  // MZ pattern, todo replace with better detection.
+  typedef std::vector<uint8_t> Pattern;
+  Pattern exe_pattern;
+
+  // Lookahed.
+  using BufferType = CyclicDeque<uint8_t>;
+  BufferType buffer_;
+
+  // Out buffer, only used to store headers (for now).
+  std::array<uint8_t, 16 * KB> out_buffer_;
+  size_t out_buffer_pos_, out_buffer_size_;
+
+  // Read / write stream.
+  InStream* stream_;
+
+  // Opt var
+  size_t opt_var_;
+public:
 
   // std::vector<DetectedBlock> detected_blocks_;
-  DetectedBlock current_block_;
+  Detector::DetectedBlock current_block_;
 
   // Detected but not already read.
-  DetectedBlock detected_block_;
+  Detector::DetectedBlock detected_block_;
 
   // Saved detected blocks.
-  std::deque<DetectedBlock> saved_blocks_;
+  std::deque<Detector::DetectedBlock> saved_blocks_;
 
   // Statistics
-  uint64_t num_blocks_[kProfileCount];
-  uint64_t num_bytes_[kProfileCount];
+  uint64_t num_blocks_[Detector::kProfileCount];
+  uint64_t num_bytes_[Detector::kProfileCount];
   uint64_t overhead_bytes_;
   uint64_t small_len_;
 
@@ -187,7 +192,7 @@ public:
   uint32_t last_word_;
 public:
 
-  Detector(Stream* stream) : stream_(stream), opt_var_(0), last_word_(0) {
+  InDetector(InStream* stream) : stream_(stream), opt_var_(0), last_word_(0) {
   }
 
   void setOptVar(size_t var) {
@@ -197,7 +202,7 @@ public:
   void init() {
     overhead_bytes_ = 0;
     small_len_ = 0;
-    for (size_t i = 0; i < kProfileCount; ++i) {
+    for (size_t i = 0; i < Detector::kProfileCount; ++i) {
       num_blocks_[i] = num_bytes_[i] = 0;
     }
     out_buffer_pos_ = out_buffer_size_ = 0;
@@ -244,45 +249,14 @@ public:
     return buffer_.Size();
   }
 
-  void put(int c) {
-    // Profile can't extend past the end of the buffer.
-    if (current_block_.length() > 0) {
-      current_block_.pop();
-      if (buffer_.Full()) {
-        flush();
-      }
-      buffer_.PushBack(c);
-    } else {
-      out_buffer_[out_buffer_pos_++] = static_cast<uint8_t>(c);
-      auto num_bytes = DetectedBlock::getSizeFromHeaderByte(out_buffer_[0]);
-      if (out_buffer_pos_ == num_bytes) {
-        current_block_.read(&out_buffer_[0]);
-        if (current_block_.profile() == kProfileEOF) {
-          out_buffer_pos_ = 0;
-        }
-        out_buffer_pos_ = 0;
-      }
-    }
-  }
-
-  Profile detect() {
+  Detector::Profile detect() {
     if (current_block_.length() > 0) {
       return current_block_.profile();
     }
-    if (current_block_.profile() == kProfileEOF) {
-      return kProfileEOF;
+    if (current_block_.profile() == Detector::kProfileEOF) {
+      return Detector::kProfileEOF;
     }
-    return kProfileBinary;
-  }
-
-  void flush() {
-    // TODO: Optimize
-    BufferedStreamWriter<4 * KB> sout(stream_);
-    while (!buffer_.Empty()) {
-      sout.put(buffer_.Front());
-      buffer_.PopFront();
-    }
-    sout.flush();
+    return Detector::kProfileBinary;
   }
 
   inline uint32_t at(uint32_t index) const {
@@ -290,7 +264,7 @@ public:
     return buffer_[index];
   }
 
-  int get(Profile& profile) {
+  int get(Detector::Profile& profile) {
     // Profile can't extend past the end of the buffer.
     if (false && current_block_.length() == 0) {
       current_block_ = detectBlock();
@@ -305,11 +279,11 @@ public:
         current_block_ = detected_block_;
       }
       overhead_bytes_ += out_buffer_size_;
-      profile = kProfileBinary;
+      profile = Detector::kProfileBinary;
       return out_buffer_[out_buffer_pos_ - 1];
     }
-    if (current_block_.profile() == kProfileEOF) {
-      profile = kProfileEOF;
+    if (current_block_.profile() == Detector::kProfileEOF) {
+      profile = Detector::kProfileEOF;
       return EOF;
     }
     detected_block_ = detectBlock();
@@ -317,7 +291,7 @@ public:
     num_bytes_[detected_block_.profile()] += detected_block_.length();
     if (detected_block_.length() < 64) ++small_len_;
     out_buffer_size_ = detected_block_.write(&out_buffer_[0]);
-    profile = kProfileBinary;
+    profile = Detector::kProfileBinary;
     out_buffer_pos_ = 1;
     return out_buffer_[0];
   }
@@ -350,8 +324,8 @@ public:
 
   void dumpInfo() {
     std::cout << "Detector overhead " << formatNumber(overhead_bytes_) << " small=" << small_len_ << std::endl;
-    for (size_t i = 0; i < kProfileCount; ++i) {
-      std::cout << profileToString(static_cast<Profile>(i)) << "("
+    for (size_t i = 0; i < Detector::kProfileCount; ++i) {
+      std::cout << Detector::profileToString(static_cast<Detector::Profile>(i)) << "("
         << formatNumber(num_blocks_[i]) << ") : " << formatNumber(num_bytes_[i]) << std::endl;
     }
   }
@@ -360,7 +334,7 @@ public:
     return IsWordChar(c) || c == '|' || c == '_' || c == '-';
   }
 
-  DetectedBlock detectBlock() {
+  Detector::DetectedBlock detectBlock() {
     if (!saved_blocks_.empty()) {
       auto ret = saved_blocks_.front();
       saved_blocks_.pop_front();
@@ -369,7 +343,7 @@ public:
     RefillRead();
     const size_t buffer_size = buffer_.Size();
     if (buffer_size == 0) {
-      return DetectedBlock(kProfileEOF, 0);
+      return Detector::DetectedBlock(Detector::kProfileEOF, 0);
     }
 
     size_t binary_len = 0;
@@ -386,8 +360,8 @@ public:
         Window<BufferType> window(buffer_, static_cast<uint32_t>(pos));
         OffsetBlock b;
         if (Wav16::Detect(last_word_, window, &b)) {
-          saved_blocks_.push_back(DetectedBlock(kProfileWave16, b.len));
-          return DetectedBlock(kProfileBinary, b.offset);
+          saved_blocks_.push_back(Detector::DetectedBlock(Detector::kProfileWave16, b.len));
+          return Detector::DetectedBlock(Detector::kProfileBinary, b.offset);
         }
         const uint8_t c = buffer_[pos];
         last_word_ = (last_word_ << 8) | c;
@@ -431,7 +405,7 @@ public:
         }
         if (space_count * 100 > text_len && text_score > static_cast<int>(text_len)) {
           if (binary_len == 0) {
-            return DetectedBlock(kProfileText, static_cast<uint32_t>(text_len));
+            return Detector::DetectedBlock(Detector::kProfileText, static_cast<uint32_t>(text_len));
           } else {
             break;
           }
@@ -443,8 +417,161 @@ public:
       }
       ++binary_len;
     }
-    return DetectedBlock(kProfileBinary, static_cast<uint32_t>(binary_len));
+    return Detector::DetectedBlock(Detector::kProfileBinary, static_cast<uint32_t>(binary_len));
   }
+};
+
+// Detects blocks and data type from input data
+class OutDetector {
+  bool is_forbidden[256]; // Chars which don't appear in text often.
+  bool is_word_or_ascii_art[256];
+  uint8_t is_space[256];
+
+  // MZ pattern, todo replace with better detection.
+  typedef std::vector<uint8_t> Pattern;
+  Pattern exe_pattern;
+
+  // Lookahed.
+  using BufferType = CyclicDeque<uint8_t>;
+  BufferType buffer_;
+
+  // Out buffer, only used to store headers (for now).
+  std::array<uint8_t, 16 * KB> out_buffer_;
+  size_t out_buffer_pos_, out_buffer_size_;
+
+  // Read / write stream.
+  OutStream* stream_;
+
+  // Opt var
+  size_t opt_var_;
+public:
+
+  // std::vector<DetectedBlock> detected_blocks_;
+  Detector::DetectedBlock current_block_;
+
+  // Detected but not already read.
+  Detector::DetectedBlock detected_block_;
+
+  // Saved detected blocks.
+  std::deque<Detector::DetectedBlock> saved_blocks_;
+
+  // Statistics
+  uint64_t num_blocks_[Detector::kProfileCount];
+  uint64_t num_bytes_[Detector::kProfileCount];
+  uint64_t overhead_bytes_;
+  uint64_t small_len_;
+
+  // Spaces.
+  size_t no_spaces_;
+
+  // Last things.
+  uint32_t last_word_;
+public:
+
+  OutDetector(OutStream* stream) : stream_(stream), opt_var_(0), last_word_(0) {
+  }
+
+  void setOptVar(size_t var) {
+    opt_var_ = var;
+  }
+
+  void init() {
+    overhead_bytes_ = 0;
+    small_len_ = 0;
+    for (size_t i = 0; i < Detector::kProfileCount; ++i) {
+      num_blocks_[i] = num_bytes_[i] = 0;
+    }
+    out_buffer_pos_ = out_buffer_size_ = 0;
+    for (auto& b : is_forbidden) b = false;
+
+    const uint8_t forbidden_arr[] = {
+      0, 1, 2, 3, 4,
+      5, 6, 7, 8, 11,
+      12, 14, 15, 16, 17,
+      19, 20, 21, 22, 23,
+      24, 25, 26, 27, 28,
+      29, 30, 31
+    };
+    for (auto c : forbidden_arr) is_forbidden[c] = true;
+    for (size_t i = 0; i < 256; ++i) {
+      is_space[i] = isspace(i) ? 1u : 0u;
+      is_word_or_ascii_art[i] = IsWordOrAsciiArtChar(i);
+    }
+    no_spaces_ = 0;
+
+    buffer_.Resize(256 * KB);
+    // Exe pattern
+    uint8_t p[] = { 0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, };
+    exe_pattern.clear();
+    for (auto& c : p) exe_pattern.push_back(c);
+  }
+
+  inline bool empty() const {
+    return size() == 0;
+  }
+
+  inline size_t size() const {
+    return buffer_.Size();
+  }
+
+  void put(int c) {
+    // Profile can't extend past the end of the buffer.
+    if (current_block_.length() > 0) {
+      current_block_.pop();
+      if (buffer_.Full()) {
+        flush();
+      }
+      buffer_.PushBack(c);
+    } else {
+      out_buffer_[out_buffer_pos_++] = static_cast<uint8_t>(c);
+      auto num_bytes = Detector::DetectedBlock::getSizeFromHeaderByte(out_buffer_[0]);
+      if (out_buffer_pos_ == num_bytes) {
+        current_block_.read(&out_buffer_[0]);
+        if (current_block_.profile() == Detector::kProfileEOF) {
+          out_buffer_pos_ = 0;
+        }
+        out_buffer_pos_ = 0;
+      }
+    }
+  }
+
+  Detector::Profile detect() {
+    if (current_block_.length() > 0) {
+      return current_block_.profile();
+    }
+    if (current_block_.profile() == Detector::kProfileEOF) {
+      return Detector::kProfileEOF;
+    }
+    return Detector::kProfileBinary;
+  }
+
+  void flush() {
+    // TODO: Optimize
+    BufferedStreamWriter<4 * KB> sout(stream_);
+    while (!buffer_.Empty()) {
+      sout.put(buffer_.Front());
+      buffer_.PopFront();
+    }
+    sout.flush();
+  }
+
+  inline uint32_t at(uint32_t index) const {
+    assert(index < buffer_.Size());
+    return buffer_[index];
+  }
+
+  void dumpInfo() {
+    std::cout << "Detector overhead " << formatNumber(overhead_bytes_) << " small=" << small_len_ << std::endl;
+    for (size_t i = 0; i < Detector::kProfileCount; ++i) {
+      std::cout << Detector::profileToString(static_cast<Detector::Profile>(i)) << "("
+        << formatNumber(num_blocks_[i]) << ") : " << formatNumber(num_bytes_[i]) << std::endl;
+    }
+  }
+
+  static bool IsWordOrAsciiArtChar(uint8_t c) {
+    return IsWordChar(c) || c == '|' || c == '_' || c == '-';
+  }
+
 };
 
 // Detector analyzer, analyze a whole stream.
@@ -452,8 +579,8 @@ class Analyzer {
 public:
   typedef std::vector<Detector::DetectedBlock> Blocks;
 
-  void analyze(Stream* stream, size_t file_idx = 0) {
-    Detector detector(stream);
+  void analyze(InStream* stream, size_t file_idx = 0) {
+    InDetector detector(stream);
     detector.setOptVar(opt_var_);
     detector.init();
     for (;;) {

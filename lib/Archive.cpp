@@ -41,6 +41,7 @@
 #include "compressors/CM-inl.hpp"  // for CM::CM<kInputs, kUseSSE, HistoryType>
 #include "compressors/Wav16.hpp"   // for Wav16
 
+#include "Detector.hpp"            // for profileToString
 #include "Dict.hpp"                // for Dict::CodeWordSet, Dict::Filter, Dict
 #include "Filter.hpp"              // for Filter
 #include "ProgressMeter.hpp"       // for ProgressThread, AutoUpdater

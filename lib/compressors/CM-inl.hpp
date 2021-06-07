@@ -327,7 +327,7 @@ inline void CM<kInputs, kUseSSE, HistoryType>::compress(Stream* in_stream, Strea
   BufferedStreamReader<4 * KB> sin(in_stream);
   assert(in_stream != nullptr);
   assert(out_stream != nullptr);
-  Detector detector(in_stream);
+  InDetector detector(in_stream);
   if (!force_profile_) {
     detector.setOptVar(opt_var_);
     detector.init();
@@ -369,7 +369,7 @@ template <size_t kInputs, bool kUseSSE, typename HistoryType>
 inline void CM<kInputs, kUseSSE, HistoryType>::decompress(Stream* in_stream, Stream* out_stream, uint64_t max_count) {
   BufferedStreamReader<4 * KB> sin(in_stream);
   BufferedStreamWriter<4 * KB> sout(out_stream);
-  Detector detector(out_stream);
+  OutDetector detector(out_stream);
   if (!force_profile_) {
     detector.setOptVar(opt_var_);
     detector.init();
