@@ -60,7 +60,7 @@ public:
   void dumpInfo() const {
     std::cout << std::endl << "E8E9: " << transform_count_ << " / " << false_positives_ << std::endl;
   }
-  void setOpt(uint32_t s) {
+  void setOpt(uint64_t s) {
     opt_var_ = s;
   }
 
@@ -154,7 +154,7 @@ private:
 
   size_t offset_;
   size_t last_offset_;
-  size_t opt_var_;
+  uint64_t opt_var_;
 
   size_t transform_count_;
   size_t false_positives_;

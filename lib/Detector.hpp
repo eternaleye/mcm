@@ -167,7 +167,7 @@ class InDetector {
   InStream* stream_;
 
   // Opt var
-  size_t opt_var_;
+  uint64_t opt_var_;
 public:
 
   // std::vector<DetectedBlock> detected_blocks_;
@@ -195,7 +195,7 @@ public:
   InDetector(InStream* stream) : stream_(stream), opt_var_(0), last_word_(0) {
   }
 
-  void setOptVar(size_t var) {
+  void setOptVar(uint64_t var) {
     opt_var_ = var;
   }
 
@@ -443,7 +443,7 @@ class OutDetector {
   OutStream* stream_;
 
   // Opt var
-  size_t opt_var_;
+  uint64_t opt_var_;
 public:
 
   // std::vector<DetectedBlock> detected_blocks_;
@@ -471,7 +471,7 @@ public:
   OutDetector(OutStream* stream) : stream_(stream), opt_var_(0), last_word_(0) {
   }
 
-  void setOptVar(size_t var) {
+  void setOptVar(uint64_t var) {
     opt_var_ = var;
   }
 
@@ -649,7 +649,7 @@ public:
 private:
   Blocks blocks_;
   Dict::Builder dict_builder_;
-  size_t opt_var_;
+  uint64_t opt_var_;
 };
 
 #endif

@@ -48,10 +48,10 @@ compres(&f, in_stream);
 
 class Filter : public Stream {
 protected:
-  uint32_t opt_var_ = 0;
+  uint64_t opt_var_ = 0;
 public:
 
-  void setOpt(uint32_t opt_var) {
+  void setOpt(uint64_t opt_var) {
     opt_var_ = opt_var;
   }
 

@@ -48,10 +48,10 @@ public:
   static const uint32_t transform_table_size = 256;
   uint32_t transform[transform_table_size];
 
-  uint32_t opt_var_ = 0;
+  uint64_t opt_var_ = 0;
   size_t* opts_ = nullptr;
 
-  void setOpt(uint32_t n) {
+  void setOpt(uint64_t n) {
     opt_var_ = n;
   }
 
